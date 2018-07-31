@@ -76,6 +76,8 @@ class pipeline:
 
 
     def visualisation(self):
+        self.preprocess()
+
         mask = self.thresholding()
         contours = self.contouring(mask)
 
