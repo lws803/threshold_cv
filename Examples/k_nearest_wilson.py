@@ -23,8 +23,8 @@ class pipeline:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
 
         l, a, b = cv2.split(img)
-        color = np.array((54.29/100 * 255, 80.81 + 127, 69.89 + 127)) # Red
-        # color = np.array((87.82/100 * 255, -79.29 + 127,  80.99 + 127)) # Green
+        # color = np.array((54.29/100 * 255, 80.81 + 127, 69.89 + 127)) # Red
+        color = np.array((87.82/100 * 255, -79.29 + 127,  80.99 + 127)) # Green
 
 
         # TODO: Add trackbar to control the thresholding
@@ -50,18 +50,18 @@ class pipeline:
         print ("Max_dist:")
         print (max_dist)
 
-        return blank_image
+        return blank_image, min_dist
 
 
-    def __threshold(self, processed_img):
-        mask = cv2.inRange(processed_img, 150, 255)
+    def __threshold(self, processed_img, min_dist):
+        mask = cv2.inRange(processed_img, 255 - min_dist - 20, 255)
 
         return mask
 
 
     def visualisation(self):
-        output = self.__preprocess()
-        output = self.__threshold(output)
+        output, min_dist = self.__preprocess()
+        output = self.__threshold(output, min_dist)
         return output
 
 
