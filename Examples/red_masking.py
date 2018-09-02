@@ -32,7 +32,7 @@ class pipeline:
 
         mask = cv2.dilate(mask,kernel,iterations = 1)
         mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
-        mask = cv2.erode(mask, None,iterations=6) # Can change iterations here
+        # mask = cv2.erode(mask, None,iterations=4) # Can change iterations here
         
         return mask
 
@@ -70,7 +70,7 @@ cv2.namedWindow('threshold', cv2.WINDOW_NORMAL)
 
 
 # Declare more thresholds here, make sure to add them to the dictionary 
-thresholds = {'L_high' : 219, 'A_high': 189, 'B_high': 149, 'L_low': 15, 'A_low': 134, 'B_low': 123}
+thresholds = {'L_high' : 219, 'A_high': 189, 'B_high': 164, 'L_low': 15, 'A_low': 134, 'B_low': 123}
 
 def callback(x):
     pass

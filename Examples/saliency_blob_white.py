@@ -3,7 +3,7 @@ import numpy as np
 import math
 import requests
 import io
-from utils.algorithms import norm_illum_color, MovingMedian, shadegrey_lab, power_law, get_salient, sharpen, grayworld, get_salient_lab
+from utils.algorithms import norm_illum_color, MovingMedian, shadegrey_lab, power_law, get_salient, deilluminate, gamma_correct, contrast_stretching, sharpen
 import sys
 
 # Usage
@@ -20,25 +20,25 @@ class pipeline:
     def preprocess(self):
         # Chaining the preprocessors
         img = self.img
+        # img = deilluminate(img)
+        # img = gamma_correct(img)
         img = norm_illum_color(img, 0.05)
         img = sharpen(img)
         img = cv2.GaussianBlur(img,(5,5),0)
-        # img = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
 
-        # a = np.double(img)
-        # b = a - 100
-        # img = np.uint8(b)
-
-        # img = grayworld(img)
-
+        # img = contrast_stretching(img)
         return img
+
     
     def thresholding(self):
-        l, a, b = cv2.split(cv2.cvtColor(self.preprocess(),cv2.COLOR_BGR2LAB))
-        mask = get_salient(255-b)
-        mask = cv2.threshold(mask, self.thresholds['saliency'] , 255, cv2.THRESH_BINARY)[1]
+        lab = cv2.cvtColor(self.preprocess(), cv2.COLOR_BGR2Lab)
+
+        upper = np.array([self.thresholds['L_high'], self.thresholds['A_high'], self.thresholds['B_high']])
+        lower = np.array([self.thresholds['L_low'], self.thresholds['A_low'], self.thresholds['B_low']])
+
+        mask = cv2.inRange(lab, lower, upper)
         
-        mask = cv2.dilate(mask,None,iterations=1)
+        # mask = cv2.dilate(mask,None,iterations=1)
         # mask = cv2.erode(mask,None,iterations=1)
         return mask
 
@@ -52,8 +52,8 @@ class pipeline:
     def blob_detector(self, im):
         min_threshold = 10                      # these values are used to filter our detector.
         max_threshold = 5000                     # they can be tweaked depending on the camera distance, camera angle, ...
-        min_area = 5                          # ... focus, brightness, etc.
-        min_circularity = .3
+        min_area = 20                          # ... focus, brightness, etc.
+        min_circularity = .9
         min_inertia_ratio = .5
 
         params = cv2.SimpleBlobDetector_Params()                # declare filter parameters.
@@ -70,7 +70,7 @@ class pipeline:
         keypoints = detector.detect(im)                         # keypoints is a list containing the detected blobs.
         
         # here we draw keypoints on the frame.
-        im_with_keypoints = cv2.drawKeypoints(im, keypoints, np.array([]), (0, 0, 255),
+        im_with_keypoints = cv2.drawKeypoints(im, keypoints, np.array([]), (255, 0, 255),
                                             cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
 
         return im_with_keypoints, keypoints
@@ -86,21 +86,22 @@ class pipeline:
 
 
     def visualisation(self):
-        # output = self.preprocess()
+        # self.preprocess()
 
         mask = self.thresholding()
         contours = self.contouring(mask)
 
-        output = self.img
-        mask_bit = cv2.drawContours(output ,contours,-1,(255,255,0),1)
-        output, keypoints = self.blob_detector(self.img)
+        output = self.preprocess()
+        output = cv2.drawContours(output ,contours,-1,(255,255,0),1)
         output = cv2.bitwise_and(output, output, mask = mask)
+        output, keypoints = self.blob_detector(output)
+
 
         detected = False
         # Find the largest contours 
         # Only mark the contours which contains the blob
         for c in reversed(contours):
-            if (cv2.contourArea(c) > 2):
+            if (cv2.contourArea(c) > 5):
                 rect = cv2.boundingRect(c)
                 for point in keypoints:
 
@@ -116,12 +117,18 @@ cv2.namedWindow('threshold', cv2.WINDOW_NORMAL)
 
 
 # Declare more thresholds here, make sure to add them to the dictionary 
-thresholds = {'saliency' : 10}
+thresholds = {'L_high' : 255, 'A_high': 255, 'B_high': 255, 'L_low': 84, 'A_low': 123, 'B_low': 82}
 
 def callback(x):
     pass
 
-cv2.createTrackbar('Saliency', 'threshold', thresholds['saliency'] , 254, callback)
+cv2.createTrackbar('L_high', 'threshold', thresholds['L_high'] , 255, callback)
+cv2.createTrackbar('A_high', 'threshold', thresholds['A_high'] , 255, callback)
+cv2.createTrackbar('B_high', 'threshold', thresholds['B_high'] , 255, callback)
+cv2.createTrackbar('L_low', 'threshold', thresholds['L_low'] , 255, callback)
+cv2.createTrackbar('A_low', 'threshold', thresholds['A_low'] , 255, callback)
+cv2.createTrackbar('B_low', 'threshold', thresholds['B_low'] , 255, callback)
+
 
 # main
 if __name__ == '__main__':
@@ -132,8 +139,13 @@ if __name__ == '__main__':
 
     while(True):
         frame = img
-        thresholds['saliency'] = cv2.getTrackbarPos('Saliency', 'threshold')
-
+        thresholds['L_high'] = cv2.getTrackbarPos('L_high', 'threshold')
+        thresholds['A_high'] = cv2.getTrackbarPos('A_high', 'threshold')
+        thresholds['B_high'] = cv2.getTrackbarPos('B_high', 'threshold')
+        thresholds['L_low'] = cv2.getTrackbarPos('L_low', 'threshold')
+        thresholds['A_low'] = cv2.getTrackbarPos('A_low', 'threshold')
+        thresholds['B_low'] = cv2.getTrackbarPos('B_low', 'threshold')
+        
         # initialize
         frame_size = frame.shape
         frame_width  = frame_size[1]
@@ -152,7 +164,8 @@ if __name__ == '__main__':
         # exit if the key "q" is pressed
         if cv2.waitKey(1) & 0xFF == ord('q'):
             print ("============= Last recorded values =============")
-            print("Threshold val: " + str(thresholds['saliency']))
+            print ("High: [" + str(thresholds['L_high']) + ", " + str(thresholds['A_high']) + ", " + str(thresholds['B_high']) + "]")
+            print ("Low: [" + str(thresholds['L_low']) + ", " + str(thresholds['A_low']) + ", " + str(thresholds['B_low']) + "]")
             break
 
     cv2.destroyAllWindows()
