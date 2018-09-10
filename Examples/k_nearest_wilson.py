@@ -23,8 +23,8 @@ class pipeline:
         img = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
 
         l, a, b = cv2.split(img)
-        # color = np.array((54.29/100 * 255, 80.81 + 127, 69.89 + 127)) # Red
-        color = np.array((87.82/100 * 255, -79.29 + 127,  80.99 + 127)) # Green
+        color = np.array((54.29/100 * 255, 80.81 + 127, 69.89 + 127)) # Red
+        # color = np.array((87.82/100 * 255, -79.29 + 127,  80.99 + 127)) # Green
 
 
         # TODO: Add trackbar to control the thresholding
@@ -75,9 +75,11 @@ if __name__ == '__main__':
     
     print (sys.argv[1])
     img = cv2.imread(sys.argv[1])
+    cap = cv2.VideoCapture(0)
 
     while(True):
-        frame = img
+        #frame = img
+        ret, frame = cap.read()
 
 
         # initialize
