@@ -1,5 +1,5 @@
 dependencies: \
-  /Users/wilson/Documents/Xcode\ Projects/k_nearest_detector_v2/k_nearest_detector_v2/main.cpp \
+  /Users/wilson/Gits/threshold_cv/Examples/k_nearest_detector_v2/k_nearest_detector_v2/main.cpp \
   /usr/local/Cellar/opencv/3.4.2/include/opencv2/imgproc.hpp \
   /usr/local/Cellar/opencv/3.4.2/include/opencv2/core.hpp \
   /usr/local/Cellar/opencv/3.4.2/include/opencv2/core/cvdef.h \
