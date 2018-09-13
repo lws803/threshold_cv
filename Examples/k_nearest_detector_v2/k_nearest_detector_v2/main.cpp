@@ -17,6 +17,33 @@ using namespace cv;
 using namespace std;
 
 float MIN_GLOBAL, MAX_GLOBAL;
+string COLOR_SELECT = "PURE_GREEN";
+
+class ColorMap {
+    vector<float> colorArray = {0,0,0};
+public:
+    ColorMap (string COLOR_SELECT) {
+        if (COLOR_SELECT == "PURE_RED") {
+            colorArray = {54.29/100 * 255, 80.81 + 127, 69.89 + 127};
+        }
+        else if (COLOR_SELECT == "PURE_GREEN") {
+            colorArray = {46.228/100 * 255, -51.699 + 127,  49.897 + 127};
+        }
+        else if (COLOR_SELECT == "PURE_BLUE") {
+            colorArray = {29.57/100 * 255, 68.30 + 127,  -112.03 + 127};
+        }
+        else if (COLOR_SELECT == "PURE_YELLOW") {
+            colorArray = {97.139/100 * 255, -21.558 + 127,  94.477 + 127};
+        }
+        else {
+            colorArray = {97.139/100 * 255, -21.558 + 127,  94.477 + 127}; // PURE_YELLOW
+        }
+    }
+    
+    vector<float> getColor () {
+        return colorArray;
+    }
+};
 
 
 class pipeline {
@@ -28,14 +55,10 @@ class pipeline {
     enum FUNCTION_TYPE {
         QUADRATIC, MULTIPLICATIVE
     };
-    enum COLORS {
-        PURE_RED, PURE_GREEN, PURE_BLUE, PURE_YELLOW
-    };
     enum OUTPUT_MODE {
         MASKED, PROCESSED, PREPROCESSED
     };
     
-    COLORS COLOR_SELECT = PURE_BLUE;
     FUNCTION_TYPE FUNCTION = MULTIPLICATIVE;
     OUTPUT_MODE OUTPUT = MASKED;
     
@@ -61,25 +84,6 @@ class pipeline {
         Mat LAB[3];
         split(lab_image, LAB);
 
-        vector<float> colorArray = {0,0,0};
-        
-        
-        switch (COLOR_SELECT) {
-            case PURE_RED:
-                colorArray = {54.29/100 * 255, 80.81 + 127, 69.89 + 127};
-                break;
-            case PURE_BLUE:
-                colorArray = {29.57/100 * 255, 68.30 + 127,  -112.03 + 127};
-                break;
-            case PURE_GREEN:
-                colorArray = {46.228/100 * 255, -51.699 + 127,  49.897 + 127};
-                break;
-            case PURE_YELLOW:
-                colorArray = {97.139/100 * 255, -21.558 + 127,  94.477 + 127};
-            default:
-                break;
-        }
-        
         
         Mat img(lab_image.rows, lab_image.cols, CV_8UC1, Scalar(0));
         
@@ -93,7 +97,9 @@ class pipeline {
                     LAB[1].at<uchar>(i, d),
                     LAB[2].at<uchar>(i, d)};
                 
-                float dist = cartesian_dist(colorArray, lab_channels);
+                ColorMap myColorChoice = ColorMap(COLOR_SELECT);
+                
+                float dist = cartesian_dist(myColorChoice.getColor(), lab_channels);
                 
                 switch (FUNCTION) {
                     case QUADRATIC:
