@@ -18,6 +18,7 @@ using namespace std;
 
 float MIN_GLOBAL, MAX_GLOBAL;
 
+
 class pipeline {
     Mat inputImg, processed, mask, preprocessed;
     
@@ -28,15 +29,15 @@ class pipeline {
         QUADRATIC, MULTIPLICATIVE
     };
     enum COLORS {
-        PURE_RED, PURE_GREEN, PURE_BLUE
+        PURE_RED, PURE_GREEN, PURE_BLUE, PURE_YELLOW
     };
     enum OUTPUT_MODE {
         MASKED, PROCESSED, PREPROCESSED
     };
     
-    COLORS COLOR_SELECT = PURE_RED;
+    COLORS COLOR_SELECT = PURE_BLUE;
     FUNCTION_TYPE FUNCTION = MULTIPLICATIVE;
-    OUTPUT_MODE OUTPUT = PROCESSED;
+    OUTPUT_MODE OUTPUT = MASKED;
     
     
     float cartesian_dist (vector<float> colorArray, vector<uchar> lab_channels) {
@@ -71,8 +72,10 @@ class pipeline {
                 colorArray = {29.57/100 * 255, 68.30 + 127,  -112.03 + 127};
                 break;
             case PURE_GREEN:
-                colorArray = {87.82/100 * 255, -79.29 + 127,  80.99 + 127};
+                colorArray = {46.228/100 * 255, -51.699 + 127,  49.897 + 127};
                 break;
+            case PURE_YELLOW:
+                colorArray = {97.139/100 * 255, -21.558 + 127,  94.477 + 127};
             default:
                 break;
         }
@@ -133,7 +136,7 @@ class pipeline {
     
     Mat threshold (Mat input) {
         Mat output;
-        inRange(input, Scalar(200), Scalar(255), output);
+        inRange(input, Scalar(20), Scalar(255), output);
         return output;
     }
     
@@ -181,6 +184,7 @@ int main(int argc, const char * argv[]) {
     VideoCapture cap(0); // webcam
     Mat source;
     float multiplier = 10;
+    
     
     while (true) {
         Mat output;

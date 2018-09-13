@@ -16,7 +16,7 @@
 #include <sensor_msgs/Image.h>
 #include <cv_bridge/cv_bridge.h>
 #include "ros/ros.h"
-
+#include <unordered_map>
 
 
 using namespace cv;
@@ -25,9 +25,16 @@ using namespace ros;
 
 float MULTIPLER_GLOBAL = 10;
 float MIN_GLOBAL, MAX_GLOBAL;
-
-
 image_transport::Publisher image_pub;
+
+unordered_map<string: vector<float> > colorMap = {
+    "PURE_RED": {54.29/100 * 255, 80.81 + 127, 69.89 + 127},
+    "PURE_GREEN": {46.228/100 * 255, -51.699 + 127,  49.897 + 127},
+    "PURE_BLUE": {29.57/100 * 255, 68.30 + 127,  -112.03 + 127},
+    "PURE_YELLOW": {97.139/100 * 255, -21.558 + 127,  94.477 + 127}
+}; 
+
+string COLOR_STRING;
 
 class pipeline {
     Mat inputImg, processed, mask, preprocessed;
@@ -38,9 +45,7 @@ class pipeline {
     enum FUNCTION_TYPE {
         QUADRATIC, MULTIPLICATIVE
     };
-    enum COLORS {
-        PURE_RED, PURE_GREEN, PURE_BLUE
-    };
+
     enum OUTPUT_MODE {
         MASKED, PROCESSED, PREPROCESSED
     };
@@ -70,24 +75,8 @@ class pipeline {
         Mat LAB[3];
         split(lab_image, LAB);
 
-        vector<float> colorArray = {0,0,0};
-        
-        
-        switch (COLOR_SELECT) {
-            case PURE_RED:
-                colorArray = {54.29/100 * 255, 80.81 + 127, 69.89 + 127};
-                break;
-            case PURE_BLUE:
-                colorArray = {29.57/100 * 255, 68.30 + 127,  -112.03 + 127};
-                break;
-            case PURE_GREEN:
-                colorArray = {87.82/100 * 255, -79.29 + 127,  80.99 + 127};
-                break;
-            default:
-                break;
-        }
-        
-        
+        vector<float> colorArray = colorMap[COLOR_STRING];
+
         Mat img(lab_image.rows, lab_image.cols, CV_8UC1, Scalar(0));
         
         float min = 255 * MULTIPLIER;
@@ -179,57 +168,51 @@ public:
     }
 };
 
-class ImageConverter
-{
-  NodeHandle nh_;
-  image_transport::ImageTransport it_;
-  image_transport::Subscriber image_sub_;
-  image_transport::Publisher image_pub_;
+class ImageConverter {
+    NodeHandle nh_;
+    image_transport::ImageTransport it_;
+    image_transport::Subscriber image_sub_;
+    image_transport::Publisher image_pub_;
 
 public:
-  ImageConverter()
-    : it_(nh_)
-  {
-    // Subscrive to input video feed and publish output video feed
-    image_sub_ = it_.subscribe("kinect2/hd/image_color/", 1,
-      &ImageConverter::imageCb, this);
-    image_pub_ = it_.advertise("k_nearest_viewer", 1);
-  }
-
-  ~ImageConverter()
-  {
-  }
-
-  void imageCb(const sensor_msgs::ImageConstPtr& msg)
-  {
-    cv_bridge::CvImagePtr cv_ptr;
-    try
-    {
-        cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-        resize (cv_ptr->image, cv_ptr->image, Size(), 0.3, 0.3);
-        pipeline myPipeline = pipeline(cv_ptr->image, MULTIPLER_GLOBAL);
-        MULTIPLER_GLOBAL = myPipeline.getProposedMultipler();
-        sensor_msgs::ImagePtr output_msg = cv_bridge::CvImage(std_msgs::Header(), "8UC1", myPipeline.visualise()).toImageMsg();
-
-    // Output modified video stream
-    image_pub_.publish(output_msg);
-
-    }
-    catch (cv_bridge::Exception& e)
-    {
-      ROS_ERROR("cv_bridge exception: %s", e.what());
-      return;
+    ImageConverter()
+    : it_(nh_) {
+        // Subscrive to input video feed and publish output video feed
+        image_sub_ = it_.subscribe("kinect2/hd/image_color/", 1,
+        &ImageConverter::imageCb, this);
+        image_pub_ = it_.advertise("k_nearest_viewer", 1);
     }
 
-    // Update GUI Window
-    // cv::imshow(OPENCV_WINDOW, cv_ptr->image);
-    // cv::waitKey(3);
-  }
+    ~ImageConverter()
+    {
+    }
+
+    void imageCb(const sensor_msgs::ImageConstPtr& msg) {
+        cv_bridge::CvImagePtr cv_ptr;
+        try
+        {
+            cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+            resize (cv_ptr->image, cv_ptr->image, Size(), 0.3, 0.3);
+            pipeline myPipeline = pipeline(cv_ptr->image, MULTIPLER_GLOBAL);
+            MULTIPLER_GLOBAL = myPipeline.getProposedMultipler();
+            sensor_msgs::ImagePtr output_msg = cv_bridge::CvImage(std_msgs::Header(), "8UC1", myPipeline.visualise()).toImageMsg();
+
+            // Output modified video stream
+            image_pub_.publish(output_msg);
+
+        }
+        catch (cv_bridge::Exception& e)
+        {
+            ROS_ERROR("cv_bridge exception: %s", e.what());
+            return;
+        }
+    }
 };
 
 int main(int argc, char** argv)
 {
   init(argc, argv, "k_nearest_processor");
+  COLOR_STRING = n.setParam("color", "Choice of color to target");
   ImageConverter ic;
   spin();
   return 0;
