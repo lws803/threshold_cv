@@ -16,7 +16,6 @@
 #include <sensor_msgs/Image.h>
 #include <cv_bridge/cv_bridge.h>
 #include "ros/ros.h"
-#include <unordered_map>
 
 
 using namespace cv;
@@ -27,14 +26,34 @@ float MULTIPLER_GLOBAL = 10;
 float MIN_GLOBAL, MAX_GLOBAL;
 image_transport::Publisher image_pub;
 
-unordered_map<string: vector<float> > colorMap = {
-    "PURE_RED": {54.29/100 * 255, 80.81 + 127, 69.89 + 127},
-    "PURE_GREEN": {46.228/100 * 255, -51.699 + 127,  49.897 + 127},
-    "PURE_BLUE": {29.57/100 * 255, 68.30 + 127,  -112.03 + 127},
-    "PURE_YELLOW": {97.139/100 * 255, -21.558 + 127,  94.477 + 127}
-}; 
+string COLOR_SELECT = "PURE_GREEN";
 
-string COLOR_STRING;
+class ColorMap {
+    vector<float> colorArray = {0,0,0};
+public:
+    ColorMap (string COLOR_SELECT) {
+        if (COLOR_SELECT == "PURE_RED") {
+            colorArray = {54.29/100 * 255, 80.81 + 127, 69.89 + 127};
+        }
+        else if (COLOR_SELECT == "PURE_GREEN") {
+            colorArray = {46.228/100 * 255, -51.699 + 127,  49.897 + 127};
+        }
+        else if (COLOR_SELECT == "PURE_BLUE") {
+            colorArray = {29.57/100 * 255, 68.30 + 127,  -112.03 + 127};
+        }
+        else if (COLOR_SELECT == "PURE_YELLOW") {
+            colorArray = {97.139/100 * 255, -21.558 + 127,  94.477 + 127};
+        }
+        else {
+            colorArray = {97.139/100 * 255, -21.558 + 127,  94.477 + 127}; // PURE_YELLOW
+        }
+    }
+    
+    vector<float> getColor () {
+        return colorArray;
+    }
+};
+
 
 class pipeline {
     Mat inputImg, processed, mask, preprocessed;
@@ -45,14 +64,12 @@ class pipeline {
     enum FUNCTION_TYPE {
         QUADRATIC, MULTIPLICATIVE
     };
-
     enum OUTPUT_MODE {
         MASKED, PROCESSED, PREPROCESSED
     };
     
-    COLORS COLOR_SELECT = PURE_BLUE;
     FUNCTION_TYPE FUNCTION = MULTIPLICATIVE;
-    OUTPUT_MODE OUTPUT = PROCESSED;
+    OUTPUT_MODE OUTPUT = MASKED;
     
     
     float cartesian_dist (vector<float> colorArray, vector<uchar> lab_channels) {
@@ -65,6 +82,7 @@ class pipeline {
     
     Mat preprocessor (Mat input) {
         Mat lab_image = input;
+        
         // Gaussian blurring
         GaussianBlur(input, lab_image, Size( 5, 5 ), 0, 0);
         cvtColor(lab_image, lab_image, CV_BGR2Lab);
@@ -75,8 +93,7 @@ class pipeline {
         Mat LAB[3];
         split(lab_image, LAB);
 
-        vector<float> colorArray = colorMap[COLOR_STRING];
-
+        
         Mat img(lab_image.rows, lab_image.cols, CV_8UC1, Scalar(0));
         
         float min = 255 * MULTIPLIER;
@@ -89,7 +106,9 @@ class pipeline {
                     LAB[1].at<uchar>(i, d),
                     LAB[2].at<uchar>(i, d)};
                 
-                float dist = cartesian_dist(colorArray, lab_channels);
+                ColorMap myColorChoice = ColorMap(COLOR_SELECT);
+                
+                float dist = cartesian_dist(myColorChoice.getColor(), lab_channels);
                 
                 switch (FUNCTION) {
                     case QUADRATIC:
@@ -106,6 +125,7 @@ class pipeline {
                 if (dist > max) max = dist;
                 
                 dist -= MIN_GLOBAL;
+                
                 
                 if (dist > 255) dist = 255;
                 if (dist < 0) dist = 0;
@@ -131,7 +151,7 @@ class pipeline {
     
     Mat threshold (Mat input) {
         Mat output;
-        inRange(input, Scalar(200), Scalar(255), output);
+        inRange(input, Scalar(20), Scalar(255), output);
         return output;
     }
     
@@ -139,11 +159,17 @@ class pipeline {
 public:
     pipeline (Mat input, float multiplier) {
         // constructor
+        time_t start, end;
+        time(&start);
         this->MULTIPLIER = multiplier;
         this->inputImg = input;
         this->preprocessed = preprocessor(this->inputImg);
         this->processed = k_nearest(this->preprocessed);
         this->mask = threshold(this->processed);
+        
+        time(&end);
+        double seconds = difftime (end, start);
+        
 //        cout << (double)seconds << endl;
     }
     
@@ -168,6 +194,7 @@ public:
     }
 };
 
+
 class ImageConverter {
     NodeHandle nh_;
     image_transport::ImageTransport it_;
@@ -181,12 +208,13 @@ public:
         image_sub_ = it_.subscribe("kinect2/hd/image_color/", 1,
         &ImageConverter::imageCb, this);
         image_pub_ = it_.advertise("k_nearest_viewer", 1);
+
+
     }
 
     ~ImageConverter()
     {
     }
-
     void imageCb(const sensor_msgs::ImageConstPtr& msg) {
         cv_bridge::CvImagePtr cv_ptr;
         try
@@ -211,9 +239,13 @@ public:
 
 int main(int argc, char** argv)
 {
-  init(argc, argv, "k_nearest_processor");
-  COLOR_STRING = n.setParam("color", "Choice of color to target");
-  ImageConverter ic;
-  spin();
-  return 0;
+    if (argc > 1) {
+        vector<string> args(argv, argv + argc);
+        cout << args[1] << endl;
+        COLOR_SELECT = args[1];
+    }
+    init(argc, argv, "k_nearest_processor");
+    ImageConverter ic;
+    spin();
+    return 0;
 }
