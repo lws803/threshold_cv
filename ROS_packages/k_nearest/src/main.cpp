@@ -1,0 +1,236 @@
+//
+//  main.cpp
+//  k_nearest_detector_v2
+//
+//  Created by Ler Wilson on 11/9/18.
+//  Copyright © 2018 Ler Wilson. All rights reserved.
+//
+
+#include <iostream>
+#include <stdio.h>
+#include <stdarg.h>
+#include "opencv2/imgproc.hpp"
+#include "opencv2/core.hpp"
+#include "opencv2/highgui.hpp"
+#include <image_transport/image_transport.h>
+#include <sensor_msgs/Image.h>
+#include <cv_bridge/cv_bridge.h>
+#include "ros/ros.h"
+
+
+
+using namespace cv;
+using namespace std;
+using namespace ros;
+
+float MULTIPLER_GLOBAL = 10;
+float MIN_GLOBAL, MAX_GLOBAL;
+
+
+image_transport::Publisher image_pub;
+
+class pipeline {
+    Mat inputImg, processed, mask, preprocessed;
+    
+    float MULTIPLIER = 10;
+    int DISTANCE_DIFFERENCE = 1000;
+    
+    enum FUNCTION_TYPE {
+        QUADRATIC, MULTIPLICATIVE
+    };
+    enum COLORS {
+        PURE_RED, PURE_GREEN, PURE_BLUE
+    };
+    enum OUTPUT_MODE {
+        MASKED, PROCESSED, PREPROCESSED
+    };
+    
+    COLORS COLOR_SELECT = PURE_BLUE;
+    FUNCTION_TYPE FUNCTION = MULTIPLICATIVE;
+    OUTPUT_MODE OUTPUT = PROCESSED;
+    
+    
+    float cartesian_dist (vector<float> colorArray, vector<uchar> lab_channels) {
+//        float difference_1 = pow((colorArray[0] - lab_channels[0]), 2);
+        float difference_2 = pow((colorArray[1] - lab_channels[1]), 2);
+        float difference_3 = pow((colorArray[2] - lab_channels[2]), 2);
+        return sqrt(difference_2 + difference_3);
+    }
+
+    
+    Mat preprocessor (Mat input) {
+        Mat lab_image = input;
+        // Gaussian blurring
+        GaussianBlur(input, lab_image, Size( 5, 5 ), 0, 0);
+        cvtColor(lab_image, lab_image, CV_BGR2Lab);
+        return lab_image;
+    }
+    
+    Mat k_nearest (Mat lab_image) {
+        Mat LAB[3];
+        split(lab_image, LAB);
+
+        vector<float> colorArray = {0,0,0};
+        
+        
+        switch (COLOR_SELECT) {
+            case PURE_RED:
+                colorArray = {54.29/100 * 255, 80.81 + 127, 69.89 + 127};
+                break;
+            case PURE_BLUE:
+                colorArray = {29.57/100 * 255, 68.30 + 127,  -112.03 + 127};
+                break;
+            case PURE_GREEN:
+                colorArray = {87.82/100 * 255, -79.29 + 127,  80.99 + 127};
+                break;
+            default:
+                break;
+        }
+        
+        
+        Mat img(lab_image.rows, lab_image.cols, CV_8UC1, Scalar(0));
+        
+        float min = 255 * MULTIPLIER;
+        float max = 0;
+        
+        // Main processing
+        for (int i = 0; i < lab_image.rows; i++) {
+            for (int d = 0; d < lab_image.cols; d++) {
+                vector<uchar> lab_channels = {LAB[0].at<uchar>(i, d),
+                    LAB[1].at<uchar>(i, d),
+                    LAB[2].at<uchar>(i, d)};
+                
+                float dist = cartesian_dist(colorArray, lab_channels);
+                
+                switch (FUNCTION) {
+                    case QUADRATIC:
+                        dist = pow(dist, MULTIPLIER);
+                        break;
+                    case MULTIPLICATIVE:
+                        dist *= MULTIPLIER;
+                        break;
+                    default:
+                        break;
+                }
+                
+                if (dist < min) min = dist;
+                if (dist > max) max = dist;
+                
+                dist -= MIN_GLOBAL;
+                
+                if (dist > 255) dist = 255;
+                if (dist < 0) dist = 0;
+                
+                img.at<uchar>(i, d) = 255 - round(dist);
+            }
+        }
+        
+        MAX_GLOBAL = max;
+        MIN_GLOBAL = min;
+        
+        autoAdjust(max, min);
+        
+        return img;
+    }
+    
+    void autoAdjust (float max, float min) {
+        if (max - min < DISTANCE_DIFFERENCE) MULTIPLIER += 0.1;
+        if (max - min > DISTANCE_DIFFERENCE) MULTIPLIER -= 0.1;
+        if (MULTIPLIER < 1) MULTIPLIER = 1;
+    }
+    
+    
+    Mat threshold (Mat input) {
+        Mat output;
+        inRange(input, Scalar(200), Scalar(255), output);
+        return output;
+    }
+    
+    
+public:
+    pipeline (Mat input, float multiplier) {
+        // constructor
+        this->MULTIPLIER = multiplier;
+        this->inputImg = input;
+        this->preprocessed = preprocessor(this->inputImg);
+        this->processed = k_nearest(this->preprocessed);
+        this->mask = threshold(this->processed);
+//        cout << (double)seconds << endl;
+    }
+    
+    Mat visualise () {
+        switch (OUTPUT) {
+            case MASKED:
+                return this->mask;
+                break;
+            case PROCESSED:
+                return this->processed;
+                break;
+            case PREPROCESSED:
+                return this->preprocessed;
+                break;
+            default:
+                return this->inputImg;
+        }
+    }
+    
+    float getProposedMultipler () {
+        return this->MULTIPLIER;
+    }
+};
+
+class ImageConverter
+{
+  NodeHandle nh_;
+  image_transport::ImageTransport it_;
+  image_transport::Subscriber image_sub_;
+  image_transport::Publisher image_pub_;
+
+public:
+  ImageConverter()
+    : it_(nh_)
+  {
+    // Subscrive to input video feed and publish output video feed
+    image_sub_ = it_.subscribe("kinect2/hd/image_color/", 1,
+      &ImageConverter::imageCb, this);
+    image_pub_ = it_.advertise("k_nearest_viewer", 1);
+  }
+
+  ~ImageConverter()
+  {
+  }
+
+  void imageCb(const sensor_msgs::ImageConstPtr& msg)
+  {
+    cv_bridge::CvImagePtr cv_ptr;
+    try
+    {
+        cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+        resize (cv_ptr->image, cv_ptr->image, Size(), 0.3, 0.3);
+        pipeline myPipeline = pipeline(cv_ptr->image, MULTIPLER_GLOBAL);
+        MULTIPLER_GLOBAL = myPipeline.getProposedMultipler();
+        sensor_msgs::ImagePtr output_msg = cv_bridge::CvImage(std_msgs::Header(), "8UC1", myPipeline.visualise()).toImageMsg();
+
+    // Output modified video stream
+    image_pub_.publish(output_msg);
+
+    }
+    catch (cv_bridge::Exception& e)
+    {
+      ROS_ERROR("cv_bridge exception: %s", e.what());
+      return;
+    }
+
+    // Update GUI Window
+    // cv::imshow(OPENCV_WINDOW, cv_ptr->image);
+    // cv::waitKey(3);
+  }
+};
+
+int main(int argc, char** argv)
+{
+  init(argc, argv, "k_nearest_processor");
+  ImageConverter ic;
+  spin();
+  return 0;
+}
