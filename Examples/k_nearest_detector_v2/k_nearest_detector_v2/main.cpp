@@ -16,11 +16,12 @@
 using namespace cv;
 using namespace std;
 
+float MIN_GLOBAL, MAX_GLOBAL;
+
 class pipeline {
     Mat inputImg, processed, mask, preprocessed;
     
     float MULTIPLIER = 10;
-    float MIN_GLOBAL, MAX_GLOBAL;
     int DISTANCE_DIFFERENCE = 1000;
     
     enum FUNCTION_TYPE {
