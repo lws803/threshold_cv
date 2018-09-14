@@ -17,10 +17,11 @@ using namespace cv;
 using namespace std;
 
 float MIN_GLOBAL, MAX_GLOBAL;
-string COLOR_SELECT = "PURE_BLUE";
+string COLOR_SELECT = "PURE_RED";
 
 class ColorMap {
     vector<float> colorArray = {0,0,0};
+    int distance_difference = 1000;
 public:
     ColorMap (string COLOR_SELECT) {
         if (COLOR_SELECT == "PURE_RED") {
@@ -43,14 +44,18 @@ public:
     vector<float> getColor () {
         return colorArray;
     }
+    
+    int getDistanceDifference () {
+        return distance_difference;
+    }
 };
 
 
 class pipeline {
     Mat inputImg, processed, mask, preprocessed;
-    
+    ColorMap myColorChoice = ColorMap(COLOR_SELECT);
+
     float MULTIPLIER = 10;
-    int DISTANCE_DIFFERENCE = 1000;
     
     enum FUNCTION_TYPE {
         QUADRATIC, MULTIPLICATIVE
@@ -97,7 +102,6 @@ class pipeline {
                     LAB[1].at<uchar>(i, d),
                     LAB[2].at<uchar>(i, d)};
                 
-                ColorMap myColorChoice = ColorMap(COLOR_SELECT);
                 
                 float dist = cartesian_dist(myColorChoice.getColor(), lab_channels);
                 
@@ -134,8 +138,8 @@ class pipeline {
     }
     
     void autoAdjust (float max, float min) {
-        if (max - min < DISTANCE_DIFFERENCE) MULTIPLIER += 0.1;
-        if (max - min > DISTANCE_DIFFERENCE) MULTIPLIER -= 0.1;
+        if (max - min < myColorChoice.getDistanceDifference()) MULTIPLIER += 0.1;
+        if (max - min > myColorChoice.getDistanceDifference()) MULTIPLIER -= 0.1;
         if (MULTIPLIER < 1) MULTIPLIER = 1;
     }
     
@@ -193,6 +197,7 @@ int main(int argc, char ** argv) {
     
     vector<std::string> args(argv, argv + argc);
     if (argc > 1) {
+        cout << args[1] << endl;
         COLOR_SELECT = args[1];
     }
     
