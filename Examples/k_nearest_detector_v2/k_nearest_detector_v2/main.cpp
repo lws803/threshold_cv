@@ -17,7 +17,7 @@ using namespace cv;
 using namespace std;
 
 float MIN_GLOBAL, MAX_GLOBAL;
-string COLOR_SELECT = "PURE_GREEN";
+string COLOR_SELECT = "PURE_BLUE";
 
 class ColorMap {
     vector<float> colorArray = {0,0,0};
@@ -186,11 +186,15 @@ public:
 };
 
 
-int main(int argc, const char * argv[]) {
+int main(int argc, char ** argv) {
     VideoCapture cap(0); // webcam
     Mat source;
     float multiplier = 10;
     
+    vector<std::string> args(argv, argv + argc);
+    if (argc > 1) {
+        COLOR_SELECT = args[1];
+    }
     
     while (true) {
         Mat output;

@@ -30,10 +30,13 @@ string COLOR_SELECT = "PURE_GREEN";
 
 class ColorMap {
     vector<float> colorArray = {0,0,0};
+    int distance_difference = 1000; // Default value
+    int min_threshold = 20;
 public:
     ColorMap (string COLOR_SELECT) {
         if (COLOR_SELECT == "PURE_RED") {
             colorArray = {54.29/100 * 255, 80.81 + 127, 69.89 + 127};
+            distance_difference = 800;
         }
         else if (COLOR_SELECT == "PURE_GREEN") {
             colorArray = {46.228/100 * 255, -51.699 + 127,  49.897 + 127};
@@ -44,6 +47,17 @@ public:
         else if (COLOR_SELECT == "PURE_YELLOW") {
             colorArray = {97.139/100 * 255, -21.558 + 127,  94.477 + 127};
         }
+        else if (COLOR_SELECT == "DARK_GREEN") {
+            colorArray = {36.202/100 * 255, -43.37 + 127,  41.858 + 127};
+        }
+        else if (COLOR_SELECT == "WEIRD_GREEN") {
+            colorArray = {40.57/100 * 255,  -10.69 + 127, -3.53 + 127};
+            distance_difference = 3000;
+            min_threshold = 200;
+        }
+        else if (COLOR_SELECT == "WEIRD_RED") {
+            colorArray = {50.52/100 * 255,  39.26 + 127, 25.71 + 127};
+        }
         else {
             colorArray = {97.139/100 * 255, -21.558 + 127,  94.477 + 127}; // PURE_YELLOW
         }
@@ -52,6 +66,14 @@ public:
     vector<float> getColor () {
         return colorArray;
     }
+
+    int getDistanceDifference () {
+        return distance_difference;
+    }
+
+    int getMinThreshold () {
+        return min_threshold;
+    }
 };
 
 
@@ -59,7 +81,8 @@ class pipeline {
     Mat inputImg, processed, mask, preprocessed;
     
     float MULTIPLIER = 10;
-    int DISTANCE_DIFFERENCE = 1000;
+    ColorMap myColorChoice = ColorMap(COLOR_SELECT);
+
     
     enum FUNCTION_TYPE {
         QUADRATIC, MULTIPLICATIVE
@@ -105,9 +128,7 @@ class pipeline {
                 vector<uchar> lab_channels = {LAB[0].at<uchar>(i, d),
                     LAB[1].at<uchar>(i, d),
                     LAB[2].at<uchar>(i, d)};
-                
-                ColorMap myColorChoice = ColorMap(COLOR_SELECT);
-                
+                                
                 float dist = cartesian_dist(myColorChoice.getColor(), lab_channels);
                 
                 switch (FUNCTION) {
@@ -143,15 +164,15 @@ class pipeline {
     }
     
     void autoAdjust (float max, float min) {
-        if (max - min < DISTANCE_DIFFERENCE) MULTIPLIER += 0.1;
-        if (max - min > DISTANCE_DIFFERENCE) MULTIPLIER -= 0.1;
+        if (max - min < myColorChoice.getDistanceDifference()) MULTIPLIER += 0.1;
+        if (max - min > myColorChoice.getDistanceDifference()) MULTIPLIER -= 0.1;
         if (MULTIPLIER < 1) MULTIPLIER = 1;
     }
     
     
     Mat threshold (Mat input) {
         Mat output;
-        inRange(input, Scalar(20), Scalar(255), output);
+        inRange(input, Scalar(myColorChoice.getMinThreshold()), Scalar(255), output);
         return output;
     }
     
@@ -205,7 +226,7 @@ public:
     ImageConverter()
     : it_(nh_) {
         // Subscrive to input video feed and publish output video feed
-        image_sub_ = it_.subscribe("kinect2/hd/image_color/", 1,
+        image_sub_ = it_.subscribe("output", 1,
         &ImageConverter::imageCb, this);
         image_pub_ = it_.advertise("k_nearest_viewer", 1);
 
