@@ -17,7 +17,7 @@
 #include <cv_bridge/cv_bridge.h>
 #include "ros/ros.h"
 #include <dynamic_reconfigure/server.h>
-
+#include <k_nearest/k_nearestConfig.h>
 
 using namespace cv;
 using namespace std;
@@ -28,19 +28,26 @@ float MIN_GLOBAL, MAX_GLOBAL;
 image_transport::Publisher image_pub;
 
 string COLOR_SELECT = "PURE_GREEN";
+bool DISTANCE_DIFFERENCE_MANUAL_BOOL = false;
+int DISTANCE_DIFFERENCE_MANUAL;
+bool DISTANCE_LIMIT_FILTER_MANUAL_BOOL = false;
+int DISTANCE_LIMIT_FILTER_MANUAL;
+
 
 class ColorMap {
     vector<float> colorArray = {0,0,0};
-    int distance_difference = 1000; // Default value
-    int min_threshold = 20;
+    int DISTANCE_DIFFERENCE = 1000;
+    float DISTANCE_LIMIT_FILTER = 255; // More means larger allowance
+
 public:
     ColorMap (string COLOR_SELECT) {
         if (COLOR_SELECT == "PURE_RED") {
             colorArray = {54.29/100 * 255, 80.81 + 127, 69.89 + 127};
-            distance_difference = 800;
+            DISTANCE_DIFFERENCE = 800;
         }
         else if (COLOR_SELECT == "PURE_GREEN") {
             colorArray = {46.228/100 * 255, -51.699 + 127,  49.897 + 127};
+            DISTANCE_DIFFERENCE = 500;
         }
         else if (COLOR_SELECT == "PURE_BLUE") {
             colorArray = {29.57/100 * 255, 68.30 + 127,  -112.03 + 127};
@@ -53,8 +60,7 @@ public:
         }
         else if (COLOR_SELECT == "WEIRD_GREEN") {
             colorArray = {40.57/100 * 255,  -11.08 + 127, -2.39 + 127};
-            distance_difference = 2000;
-            min_threshold = 200;
+            DISTANCE_DIFFERENCE = 2000;
         }
         else if (COLOR_SELECT == "WEIRD_RED") {
             colorArray = {50.52/100 * 255,  39.26 + 127, 25.71 + 127};
@@ -62,28 +68,33 @@ public:
         else {
             colorArray = {97.139/100 * 255, -21.558 + 127,  94.477 + 127}; // PURE_YELLOW
         }
+
+        if (DISTANCE_DIFFERENCE_MANUAL_BOOL) {
+            DISTANCE_DIFFERENCE = DISTANCE_DIFFERENCE_MANUAL;
+        }
+
+        if (DISTANCE_LIMIT_FILTER_MANUAL_BOOL) {
+            DISTANCE_LIMIT_FILTER = DISTANCE_LIMIT_FILTER_MANUAL;
+        }
     }
     
     vector<float> getColor () {
         return colorArray;
     }
-
     int getDistanceDifference () {
-        return distance_difference;
+        return DISTANCE_DIFFERENCE;
     }
-
-    int getMinThreshold () {
-        return min_threshold;
+    float getDistanceLimitFilter () {
+        return DISTANCE_LIMIT_FILTER;
     }
 };
 
 
 class pipeline {
     Mat inputImg, processed, mask, preprocessed;
-    
-    float MULTIPLIER = 10;
     ColorMap myColorChoice = ColorMap(COLOR_SELECT);
 
+    float MULTIPLIER = 10;
     
     enum FUNCTION_TYPE {
         QUADRATIC, MULTIPLICATIVE
@@ -93,7 +104,7 @@ class pipeline {
     };
     
     FUNCTION_TYPE FUNCTION = MULTIPLICATIVE;
-    OUTPUT_MODE OUTPUT = MASKED;
+    OUTPUT_MODE OUTPUT = PROCESSED;
     
     
     float cartesian_dist (vector<float> colorArray, vector<uchar> lab_channels) {
@@ -102,7 +113,6 @@ class pipeline {
         float difference_3 = pow((colorArray[2] - lab_channels[2]), 2);
         return sqrt(difference_2 + difference_3);
     }
-
     
     Mat preprocessor (Mat input) {
         Mat lab_image = input;
@@ -112,6 +122,29 @@ class pipeline {
         cvtColor(lab_image, lab_image, CV_BGR2Lab);
         return lab_image;
     }
+    
+    float multiply_dist (float dist) {
+        switch (FUNCTION) {
+            case QUADRATIC:
+                dist = pow(dist, MULTIPLIER);
+                break;
+            case MULTIPLICATIVE:
+                dist *= MULTIPLIER;
+                break;
+            default:
+                break;
+        }
+        return dist;
+    }
+    
+    
+    float cut_off_dist (float dist) {
+        if (dist > 255) dist = 255;
+        if (dist < 0) dist = 0;
+        
+        return dist;
+    }
+    
     
     Mat k_nearest (Mat lab_image) {
         Mat LAB[3];
@@ -129,29 +162,23 @@ class pipeline {
                 vector<uchar> lab_channels = {LAB[0].at<uchar>(i, d),
                     LAB[1].at<uchar>(i, d),
                     LAB[2].at<uchar>(i, d)};
-                                
+                
                 float dist = cartesian_dist(myColorChoice.getColor(), lab_channels);
                 
-                switch (FUNCTION) {
-                    case QUADRATIC:
-                        dist = pow(dist, MULTIPLIER);
-                        break;
-                    case MULTIPLICATIVE:
-                        dist *= MULTIPLIER;
-                        break;
-                    default:
-                        break;
-                }
                 
-                if (dist < min) min = dist;
-                if (dist > max) max = dist;
-                
-                dist -= MIN_GLOBAL;
-                
-                
-                if (dist > 255) dist = 255;
-                if (dist < 0) dist = 0;
-                
+                if (dist >= myColorChoice.getDistanceLimitFilter()) {
+                    // If it is beyond the distance we want then just ignore.
+                    dist = 255; // Make it max
+                }else{
+                    dist = multiply_dist(dist);
+                    
+                    if (dist < min) min = dist;
+                    if (dist > max) max = dist;
+                    
+                    dist -= MIN_GLOBAL;
+                    
+                    dist = cut_off_dist(dist);
+                }                
                 img.at<uchar>(i, d) = 255 - round(dist);
             }
         }
@@ -173,7 +200,7 @@ class pipeline {
     
     Mat threshold (Mat input) {
         Mat output;
-        inRange(input, Scalar(myColorChoice.getMinThreshold()), Scalar(255), output);
+        inRange(input, Scalar(20), Scalar(255), output);
         return output;
     }
     
@@ -259,6 +286,21 @@ public:
     }
 };
 
+void callback(k_nearest::k_nearestConfig &config, uint32_t level) {
+    ROS_INFO("Setting distance difference: %d", 
+            config.distance_difference);
+
+    ROS_INFO("Setting distance limit filter: %d", 
+            config.distance_limit_filter);
+
+    DISTANCE_DIFFERENCE_MANUAL_BOOL = config.distance_difference_manual_mode;
+    DISTANCE_DIFFERENCE_MANUAL = config.distance_difference;
+
+    DISTANCE_LIMIT_FILTER_MANUAL_BOOL = config.distance_limit_filter_manual_mode;
+    DISTANCE_LIMIT_FILTER_MANUAL = config.distance_limit_filter;
+
+}
+
 int main(int argc, char** argv)
 {
     if (argc > 1) {
@@ -266,8 +308,16 @@ int main(int argc, char** argv)
         cout << args[1] << endl;
         COLOR_SELECT = args[1];
     }
-    init(argc, argv, "k_nearest_processor");
+    init(argc, argv, "k_nearest_detector");
     ImageConverter ic;
+
+    dynamic_reconfigure::Server<k_nearest::k_nearestConfig> server;
+    dynamic_reconfigure::Server<k_nearest::k_nearestConfig>::CallbackType f;
+
+    f = boost::bind(&callback, _1, _2);
+    server.setCallback(f);
+
+
     spin();
     return 0;
 }
