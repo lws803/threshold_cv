@@ -16,6 +16,7 @@
 #include <sensor_msgs/Image.h>
 #include <cv_bridge/cv_bridge.h>
 #include "ros/ros.h"
+#include <dynamic_reconfigure/server.h>
 
 
 using namespace cv;
@@ -51,8 +52,8 @@ public:
             colorArray = {36.202/100 * 255, -43.37 + 127,  41.858 + 127};
         }
         else if (COLOR_SELECT == "WEIRD_GREEN") {
-            colorArray = {40.57/100 * 255,  -10.69 + 127, -3.53 + 127};
-            distance_difference = 3000;
+            colorArray = {40.57/100 * 255,  -11.08 + 127, -2.39 + 127};
+            distance_difference = 2000;
             min_threshold = 200;
         }
         else if (COLOR_SELECT == "WEIRD_RED") {
@@ -226,7 +227,7 @@ public:
     ImageConverter()
     : it_(nh_) {
         // Subscrive to input video feed and publish output video feed
-        image_sub_ = it_.subscribe("output", 1,
+        image_sub_ = it_.subscribe("/asv/camera2/image_color/", 1,
         &ImageConverter::imageCb, this);
         image_pub_ = it_.advertise("k_nearest_viewer", 1);
 

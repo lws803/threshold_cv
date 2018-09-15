@@ -8,6 +8,7 @@ project(k_nearest)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  dynamic_reconfigure
   cv_bridge
   image_transport
   roscpp
@@ -91,10 +92,9 @@ find_package(catkin REQUIRED COMPONENTS
 ##     and list every .cfg file to be processed
 
 ## Generate dynamic reconfigure parameters in the 'cfg' folder
-# generate_dynamic_reconfigure_options(
-#   cfg/DynReconf1.cfg
-#   cfg/DynReconf2.cfg
-# )
+generate_dynamic_reconfigure_options(
+  cfg/k_nearest_config.cfg
+)
 
 ###################################
 ## catkin specific configuration ##
@@ -139,6 +139,7 @@ target_link_libraries(k_nearest_wilson ${catkin_LIBRARIES} ${OpenCV_LIBRARIES})
 
 
 add_dependencies(k_nearest_wilson ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(k_nearest_wilson ${PROJECT_NAME}_gencfg)
 
 
 #############
