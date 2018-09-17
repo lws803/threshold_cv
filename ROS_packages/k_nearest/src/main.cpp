@@ -299,6 +299,18 @@ void callback(k_nearest::k_nearestConfig &config, uint32_t level) {
     DISTANCE_LIMIT_FILTER_MANUAL_BOOL = config.distance_limit_filter_manual_mode;
     DISTANCE_LIMIT_FILTER_MANUAL = config.distance_limit_filter;
 
+    switch (config.color_selection) {
+        case 0:
+            COLOR_SELECT = "PURE_RED";
+            break;
+        case 1: 
+            COLOR_SELECT = "PURE_GREEN";
+            break;
+        case 2: 
+            COLOR_SELECT = "PURE_BLUE";
+            break;
+    }
+    ROS_INFO("Setting detection to detect: %s", COLOR_SELECT.c_str());
 }
 
 int main(int argc, char** argv)
