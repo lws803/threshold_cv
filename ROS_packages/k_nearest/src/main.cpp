@@ -195,6 +195,7 @@ class pipeline {
         if (max - min < myColorChoice.getDistanceDifference()) MULTIPLIER += 0.1;
         if (max - min > myColorChoice.getDistanceDifference()) MULTIPLIER -= 0.1;
         if (MULTIPLIER < 1) MULTIPLIER = 1;
+        if (MULTIPLIER > 10000) MULTIPLIER = 10000;
     }
     
     
