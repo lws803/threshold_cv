@@ -26,7 +26,7 @@ using namespace std;
 
 
 float MIN_GLOBAL, MAX_GLOBAL;
-string COLOR_SELECT = "PURE_RED";
+string COLOR_SELECT = "WEIRD_GREEN";
 
 class ColorMap {
     vector<float> colorArray = {0,0,0};
@@ -169,6 +169,7 @@ class pipeline {
         if (max - min < myColorChoice.getDistanceDifference()) MULTIPLIER += 0.1;
         if (max - min > myColorChoice.getDistanceDifference()) MULTIPLIER -= 0.1;
         if (MULTIPLIER < 1) MULTIPLIER = 1;
+        if (MULTIPLIER > 10000) MULTIPLIER = 10000;
     }
     
     
@@ -237,7 +238,7 @@ int main(int argc, char ** argv) {
 
         namedWindow("My Window", WINDOW_AUTOSIZE);
         multiplier = myPipeline.getProposedMultipler(); // To auto adjust
-        
+
         resize(myPipeline.visualise(), output, Size(), 2, 2); // upscale it up
         
         imshow("My Window", output);
@@ -245,9 +246,3 @@ int main(int argc, char ** argv) {
     }
     return 0;
 }
-
-//CV_EXPORTS_W void geenerate_knn_map( Mat src, Mat dst ) {
-//    pipeline myPipeline = pipeline(src);
-//    dst = myPipeline.visualise();
-//};
-//
