@@ -32,6 +32,7 @@ bool DISTANCE_DIFFERENCE_MANUAL_BOOL = false;
 int DISTANCE_DIFFERENCE_MANUAL;
 bool DISTANCE_LIMIT_FILTER_MANUAL_BOOL = false;
 int DISTANCE_LIMIT_FILTER_MANUAL;
+bool STREAM_ON = true;
 
 
 class ColorMap {
@@ -255,7 +256,7 @@ public:
     ImageConverter()
     : it_(nh_) {
         // Subscrive to input video feed and publish output video feed
-        image_sub_ = it_.subscribe("/asv/camera2/image_color/", 1,
+        image_sub_ = it_.subscribe("kinect2/hd/image_color", 1,
         &ImageConverter::imageCb, this);
         image_pub_ = it_.advertise("k_nearest_viewer", 1);
 
@@ -267,22 +268,21 @@ public:
     }
     void imageCb(const sensor_msgs::ImageConstPtr& msg) {
         cv_bridge::CvImagePtr cv_ptr;
-        try
-        {
-            cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-            resize (cv_ptr->image, cv_ptr->image, Size(), 0.3, 0.3);
-            pipeline myPipeline = pipeline(cv_ptr->image, MULTIPLER_GLOBAL);
-            MULTIPLER_GLOBAL = myPipeline.getProposedMultipler();
-            sensor_msgs::ImagePtr output_msg = cv_bridge::CvImage(std_msgs::Header(), "8UC1", myPipeline.visualise()).toImageMsg();
+        if (STREAM_ON) {
+            try {
+                cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+                resize (cv_ptr->image, cv_ptr->image, Size(), 0.3, 0.3);
+                pipeline myPipeline = pipeline(cv_ptr->image, MULTIPLER_GLOBAL);
+                MULTIPLER_GLOBAL = myPipeline.getProposedMultipler();
+                sensor_msgs::ImagePtr output_msg = cv_bridge::CvImage(std_msgs::Header(), "8UC1", myPipeline.visualise()).toImageMsg();
 
-            // Output modified video stream
-            image_pub_.publish(output_msg);
+                // Output modified video stream
+                image_pub_.publish(output_msg);
 
-        }
-        catch (cv_bridge::Exception& e)
-        {
-            ROS_ERROR("cv_bridge exception: %s", e.what());
-            return;
+            } catch (cv_bridge::Exception& e) {
+                ROS_ERROR("cv_bridge exception: %s", e.what());
+                return;
+            }
         }
     }
 };
@@ -312,6 +312,10 @@ void callback(k_nearest::k_nearestConfig &config, uint32_t level) {
             break;
     }
     ROS_INFO("Setting detection to detect: %s", COLOR_SELECT.c_str());
+
+    STREAM_ON = config.stream;
+    ROS_INFO("Setting stream to: %d", STREAM_ON);
+
 }
 
 int main(int argc, char** argv)
