@@ -31,7 +31,7 @@ string COLOR_SELECT = "PURE_GREEN";
 bool DISTANCE_DIFFERENCE_MANUAL_BOOL = false;
 int DISTANCE_DIFFERENCE_MANUAL;
 bool DISTANCE_LIMIT_FILTER_MANUAL_BOOL = false;
-int DISTANCE_LIMIT_FILTER_MANUAL;
+float DISTANCE_LIMIT_FILTER_MANUAL;
 bool STREAM_ON = true;
 
 
@@ -60,11 +60,11 @@ public:
             colorArray = {36.202/100 * 255, -43.37 + 127,  41.858 + 127};
         }
         else if (COLOR_SELECT == "WEIRD_GREEN") {
-            colorArray = {40.57/100 * 255,  -11.08 + 127, -2.39 + 127};
+            colorArray = {21.23/100 * 255,  -4.37 + 127, -1.49 + 127};
             DISTANCE_DIFFERENCE = 2000;
         }
         else if (COLOR_SELECT == "WEIRD_RED") {
-            colorArray = {50.52/100 * 255,  39.26 + 127, 25.71 + 127};
+            colorArray = {26.02/100 * 255,  21.96 + 127, 16.98 + 127};
         }
         else {
             colorArray = {97.139/100 * 255, -21.558 + 127,  94.477 + 127}; // PURE_YELLOW
@@ -105,7 +105,7 @@ class pipeline {
     };
     
     FUNCTION_TYPE FUNCTION = MULTIPLICATIVE;
-    OUTPUT_MODE OUTPUT = PROCESSED;
+    OUTPUT_MODE OUTPUT = MASKED;
     
     
     float cartesian_dist (vector<float> colorArray, vector<uchar> lab_channels) {
@@ -256,7 +256,7 @@ public:
     ImageConverter()
     : it_(nh_) {
         // Subscrive to input video feed and publish output video feed
-        image_sub_ = it_.subscribe("kinect2/hd/image_color", 1,
+        image_sub_ = it_.subscribe("asv/camera2/image_color", 1,
         &ImageConverter::imageCb, this);
         image_pub_ = it_.advertise("k_nearest_viewer", 1);
 
@@ -298,7 +298,7 @@ void callback(k_nearest::k_nearestConfig &config, uint32_t level) {
     DISTANCE_DIFFERENCE_MANUAL = config.distance_difference;
 
     DISTANCE_LIMIT_FILTER_MANUAL_BOOL = config.distance_limit_filter_manual_mode;
-    DISTANCE_LIMIT_FILTER_MANUAL = config.distance_limit_filter;
+    DISTANCE_LIMIT_FILTER_MANUAL = (float)config.distance_limit_filter/10;
 
     switch (config.color_selection) {
         case 0:
@@ -309,6 +309,12 @@ void callback(k_nearest::k_nearestConfig &config, uint32_t level) {
             break;
         case 2: 
             COLOR_SELECT = "PURE_BLUE";
+            break;
+        case 3:
+            COLOR_SELECT = "WEIRD_RED";
+            break;
+        case 4:
+            COLOR_SELECT = "WEIRD_GREEN";
             break;
     }
     ROS_INFO("Setting detection to detect: %s", COLOR_SELECT.c_str());

@@ -26,12 +26,12 @@ using namespace std;
 
 
 float MIN_GLOBAL, MAX_GLOBAL;
-string COLOR_SELECT = "WEIRD_GREEN";
+string COLOR_SELECT = "PURE_RED";
 
 class ColorMap {
     vector<float> colorArray = {0,0,0};
     int DISTANCE_DIFFERENCE = 1000;
-    float DISTANCE_LIMIT_FILTER = 255; // More means larger allowance
+    float DISTANCE_LIMIT_FILTER = 370; // More means larger allowance (max is 370)
     
 public:
     ColorMap (string COLOR_SELECT) {
