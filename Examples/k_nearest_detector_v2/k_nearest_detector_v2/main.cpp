@@ -47,6 +47,18 @@ public:
         else if (COLOR_SELECT == "PURE_YELLOW") {
             colorArray = {97.139/100 * 255, -21.558 + 127,  94.477 + 127};
         }
+        else if (COLOR_SELECT == "SELECTIVE_PURE_RED") {
+            /**
+             * Steps:
+             * 1. First we find the minimum distance when red isnt present
+             * 2. We set that as DISTANCE_LIMIT_FILTER to block it out
+             * 3. We slowly tune DISTANCE_DIFFERENCE by lowering it so that the full range of our red is present when in
+             * view
+             */
+            colorArray = {54.29/100 * 255, 80.81 + 127, 69.89 + 127};
+            DISTANCE_DIFFERENCE = 200;
+            DISTANCE_LIMIT_FILTER = 67;
+        }
         else {
             colorArray = {97.139/100 * 255, -21.558 + 127,  94.477 + 127}; // PURE_YELLOW
         }
@@ -69,6 +81,7 @@ class pipeline {
     ColorMap myColorChoice = ColorMap(COLOR_SELECT);
 
     float MULTIPLIER = 10;
+    float REAL_MIN = 2147483640;
     
     enum FUNCTION_TYPE {
         QUADRATIC, MULTIPLICATIVE
@@ -78,7 +91,7 @@ class pipeline {
     };
     
     FUNCTION_TYPE FUNCTION = MULTIPLICATIVE;
-    OUTPUT_MODE OUTPUT = PROCESSED;
+    OUTPUT_MODE OUTPUT = MASKED;
     
     
     float cartesian_dist (vector<float> colorArray, vector<uchar> lab_channels) {
@@ -144,8 +157,9 @@ class pipeline {
                     // If it is beyond the distance we want then just ignore.
                     dist = 255; // Make it max
                 }else{
+                    if (dist < REAL_MIN) REAL_MIN = dist;
+
                     dist = multiply_dist(dist);
-                    
                     if (dist < min) min = dist;
                     if (dist > max) max = dist;
                     
@@ -215,6 +229,10 @@ public:
     
     float getProposedMultipler () {
         return this->MULTIPLIER;
+    }
+    
+    float getRealMin () {
+        return this->REAL_MIN;
     }
 };
 
