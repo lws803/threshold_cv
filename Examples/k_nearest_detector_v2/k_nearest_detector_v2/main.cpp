@@ -26,7 +26,7 @@ using namespace std;
 
 
 float MIN_GLOBAL, MAX_GLOBAL;
-string COLOR_SELECT = "PURE_RED";
+string COLOR_SELECT = "SELECTIVE_PURE_RED";
 
 class ColorMap {
     vector<float> colorArray = {0,0,0};
@@ -105,7 +105,7 @@ class pipeline {
         Mat lab_image = input;
         
         // Gaussian blurring
-        GaussianBlur(input, lab_image, Size( 5, 5 ), 0, 0);
+//        GaussianBlur(input, lab_image, Size( 5, 5 ), 0, 0);
         cvtColor(lab_image, lab_image, CV_BGR2Lab);
         return lab_image;
     }

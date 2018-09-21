@@ -60,11 +60,18 @@ public:
             colorArray = {36.202/100 * 255, -43.37 + 127,  41.858 + 127};
         }
         else if (COLOR_SELECT == "WEIRD_GREEN") {
-            colorArray = {21.23/100 * 255,  -4.37 + 127, -1.49 + 127};
-            DISTANCE_DIFFERENCE = 2000;
+            colorArray = {116.09264337851928,  115.00685610010427, 127.26386339937434};
+            DISTANCE_DIFFERENCE = 3000;
         }
         else if (COLOR_SELECT == "WEIRD_RED") {
             colorArray = {26.02/100 * 255,  21.96 + 127, 16.98 + 127};
+        }
+        else if (COLOR_SELECT == "WEIRD_BLUE") {
+            DISTANCE_DIFFERENCE = 2000;
+            colorArray = {125.50277161862527, 135.06203806356245, 106.72828898743533};
+        }
+        else if (COLOR_SELECT == "WEIRD_YELLOW") {
+            colorArray = {112.36884505868463, 134.8206993541218, 154.5124661434822};
         }
         else {
             colorArray = {97.139/100 * 255, -21.558 + 127,  94.477 + 127}; // PURE_YELLOW
@@ -96,6 +103,7 @@ class pipeline {
     ColorMap myColorChoice = ColorMap(COLOR_SELECT);
 
     float MULTIPLIER = 10;
+    float REAL_MIN = 2147483640;
     
     enum FUNCTION_TYPE {
         QUADRATIC, MULTIPLICATIVE
@@ -119,7 +127,7 @@ class pipeline {
         Mat lab_image = input;
         
         // Gaussian blurring
-        GaussianBlur(input, lab_image, Size( 5, 5 ), 0, 0);
+        // GaussianBlur(input, lab_image, Size( 5, 5 ), 0, 0);
         cvtColor(lab_image, lab_image, CV_BGR2Lab);
         return lab_image;
     }
@@ -171,8 +179,9 @@ class pipeline {
                     // If it is beyond the distance we want then just ignore.
                     dist = 255; // Make it max
                 }else{
+                    if (dist < REAL_MIN) REAL_MIN = dist;
+
                     dist = multiply_dist(dist);
-                    
                     if (dist < min) min = dist;
                     if (dist > max) max = dist;
                     
@@ -243,6 +252,10 @@ public:
     float getProposedMultipler () {
         return this->MULTIPLIER;
     }
+    
+    float getRealMin () {
+        return this->REAL_MIN;
+    }
 };
 
 
@@ -273,6 +286,7 @@ public:
                 cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
                 resize (cv_ptr->image, cv_ptr->image, Size(), 0.3, 0.3);
                 pipeline myPipeline = pipeline(cv_ptr->image, MULTIPLER_GLOBAL);
+                // cout << myPipeline.getRealMin() << endl;
                 MULTIPLER_GLOBAL = myPipeline.getProposedMultipler();
                 sensor_msgs::ImagePtr output_msg = cv_bridge::CvImage(std_msgs::Header(), "8UC1", myPipeline.visualise()).toImageMsg();
 
@@ -315,6 +329,12 @@ void callback(k_nearest::k_nearestConfig &config, uint32_t level) {
             break;
         case 4:
             COLOR_SELECT = "WEIRD_GREEN";
+            break;
+        case 5: 
+            COLOR_SELECT = "WEIRD_BLUE";
+            break;
+        case 6:
+            COLOR_SELECT = "WEIRD_YELLOW";
             break;
     }
     ROS_INFO("Setting detection to detect: %s", COLOR_SELECT.c_str());
