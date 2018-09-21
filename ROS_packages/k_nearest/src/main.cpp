@@ -73,8 +73,11 @@ public:
         else if (COLOR_SELECT == "WEIRD_YELLOW") {
             colorArray = {112.36884505868463, 134.8206993541218, 154.5124661434822};
         }
+        else if (COLOR_SELECT == "BRIGHTER_BLUE") {
+            colorArray = {141.05574433656957, 142.39014563106795, 85.23480582524272};
+        }
         else {
-            colorArray = {97.139/100 * 255, -21.558 + 127,  94.477 + 127}; // PURE_YELLOW
+            colorArray = {97.139/100 * 255, -21.558 + 127,  94.477 + 127};
         }
 
         if (DISTANCE_DIFFERENCE_MANUAL_BOOL) {
@@ -273,7 +276,6 @@ public:
         &ImageConverter::imageCb, this);
         image_pub_ = it_.advertise("k_nearest_viewer", 1);
 
-
     }
 
     ~ImageConverter()
@@ -283,16 +285,17 @@ public:
         cv_bridge::CvImagePtr cv_ptr;
         if (STREAM_ON) {
             try {
-                cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-                resize (cv_ptr->image, cv_ptr->image, Size(), 0.3, 0.3);
-                pipeline myPipeline = pipeline(cv_ptr->image, MULTIPLER_GLOBAL);
-                // cout << myPipeline.getRealMin() << endl;
-                MULTIPLER_GLOBAL = myPipeline.getProposedMultipler();
-                sensor_msgs::ImagePtr output_msg = cv_bridge::CvImage(std_msgs::Header(), "8UC1", myPipeline.visualise()).toImageMsg();
+                if (image_pub_.getNumSubscribers()) {
+                    cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+                    resize (cv_ptr->image, cv_ptr->image, Size(), 0.3, 0.3);
+                    pipeline myPipeline = pipeline(cv_ptr->image, MULTIPLER_GLOBAL);
+                    // cout << myPipeline.getRealMin() << endl;
+                    MULTIPLER_GLOBAL = myPipeline.getProposedMultipler();
+                    sensor_msgs::ImagePtr output_msg = cv_bridge::CvImage(std_msgs::Header(), "8UC1", myPipeline.visualise()).toImageMsg();
 
-                // Output modified video stream
-                image_pub_.publish(output_msg);
-
+                    // Output modified video stream
+                    image_pub_.publish(output_msg);
+                }
             } catch (cv_bridge::Exception& e) {
                 ROS_ERROR("cv_bridge exception: %s", e.what());
                 return;
@@ -336,12 +339,11 @@ void callback(k_nearest::k_nearestConfig &config, uint32_t level) {
         case 6:
             COLOR_SELECT = "WEIRD_YELLOW";
             break;
+        case 7:
+            COLOR_SELECT = "BRIGHTER_BLUE";
+            break;
     }
     ROS_INFO("Setting detection to detect: %s", COLOR_SELECT.c_str());
-
-    STREAM_ON = config.stream;
-    ROS_INFO("Setting stream to: %d", STREAM_ON);
-
 }
 
 int main(int argc, char** argv)
