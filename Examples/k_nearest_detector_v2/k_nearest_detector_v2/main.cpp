@@ -27,6 +27,7 @@ using namespace std;
 
 float MIN_GLOBAL, MAX_GLOBAL;
 string COLOR_SELECT = "DARK_BLUE";
+float CLIMB = 0.1;
 
 class ColorMap {
     vector<float> colorArray = {0,0,0};
@@ -183,8 +184,8 @@ class pipeline {
     }
     
     void autoAdjust (float max, float min) {
-        if (max - min < myColorChoice.getDistanceDifference()) MULTIPLIER += 0.1;
-        if (max - min > myColorChoice.getDistanceDifference()) MULTIPLIER -= 0.1;
+        if (max - min < myColorChoice.getDistanceDifference()) MULTIPLIER += CLIMB;
+        if (max - min > myColorChoice.getDistanceDifference()) MULTIPLIER -= CLIMB;
         if (MULTIPLIER < 1) MULTIPLIER = 1;
         if (MULTIPLIER > 10000) MULTIPLIER = 10000;
     }
