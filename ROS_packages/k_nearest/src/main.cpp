@@ -32,8 +32,13 @@ bool DISTANCE_DIFFERENCE_MANUAL_BOOL = false;
 int DISTANCE_DIFFERENCE_MANUAL;
 bool DISTANCE_LIMIT_FILTER_MANUAL_BOOL = false;
 float DISTANCE_LIMIT_FILTER_MANUAL;
-bool STREAM_ON = true;
 
+bool MANUAL_COLORS_BOOL = false;
+float MANUAL_L = 0;
+float MANUAL_A = 0;
+float MANUAL_B = 0;
+
+float CLIMB = 0.1;
 
 class ColorMap {
     vector<float> colorArray = {0,0,0};
@@ -86,6 +91,10 @@ public:
 
         if (DISTANCE_LIMIT_FILTER_MANUAL_BOOL) {
             DISTANCE_LIMIT_FILTER = DISTANCE_LIMIT_FILTER_MANUAL;
+        }
+
+        if (MANUAL_COLORS_BOOL) {
+            colorArray = {MANUAL_L, MANUAL_A, MANUAL_B};
         }
     }
     
@@ -205,8 +214,8 @@ class pipeline {
     }
     
     void autoAdjust (float max, float min) {
-        if (max - min < myColorChoice.getDistanceDifference()) MULTIPLIER += 0.1;
-        if (max - min > myColorChoice.getDistanceDifference()) MULTIPLIER -= 0.1;
+        if (max - min < myColorChoice.getDistanceDifference()) MULTIPLIER += CLIMB;
+        if (max - min > myColorChoice.getDistanceDifference()) MULTIPLIER -= CLIMB;
         if (MULTIPLIER < 1) MULTIPLIER = 1;
         if (MULTIPLIER > 10000) MULTIPLIER = 10000;
     }
@@ -283,72 +292,84 @@ public:
     }
     void imageCb(const sensor_msgs::ImageConstPtr& msg) {
         cv_bridge::CvImagePtr cv_ptr;
-        if (STREAM_ON) {
-            try {
-                cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+        try {
+            cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
 
-                if (image_pub_.getNumSubscribers()) {
-                    resize (cv_ptr->image, cv_ptr->image, Size(), 0.3, 0.3);
-                    pipeline myPipeline = pipeline(cv_ptr->image, MULTIPLER_GLOBAL);
-                    // cout << myPipeline.getRealMin() << endl;
-                    MULTIPLER_GLOBAL = myPipeline.getProposedMultipler();
+            if (image_pub_.getNumSubscribers()) {
+                resize (cv_ptr->image, cv_ptr->image, Size(), 0.3, 0.3);
+                pipeline myPipeline = pipeline(cv_ptr->image, MULTIPLER_GLOBAL);
+                // cout << myPipeline.getRealMin() << endl;
+                MULTIPLER_GLOBAL = myPipeline.getProposedMultipler();
 
-                    // Output modified video stream
-                    sensor_msgs::ImagePtr output_msg = cv_bridge::CvImage(std_msgs::Header(), "8UC1", myPipeline.visualise()).toImageMsg();
-                    image_pub_.publish(output_msg);
+                // Output modified video stream
+                sensor_msgs::ImagePtr output_msg = cv_bridge::CvImage(std_msgs::Header(), "8UC1", myPipeline.visualise()).toImageMsg();
+                image_pub_.publish(output_msg);
 
-                } else {
-                    sensor_msgs::ImagePtr output_msg = cv_bridge::CvImage(std_msgs::Header(), "BGR8", cv_ptr->image).toImageMsg();
-                    image_pub_.publish(output_msg);
-                }
-            } catch (cv_bridge::Exception& e) {
-                ROS_ERROR("cv_bridge exception: %s", e.what());
-                return;
+            } else {
+                sensor_msgs::ImagePtr output_msg = cv_bridge::CvImage(std_msgs::Header(), "BGR8", cv_ptr->image).toImageMsg();
+                image_pub_.publish(output_msg);
             }
+        } catch (cv_bridge::Exception& e) {
+            ROS_ERROR("cv_bridge exception: %s", e.what());
+            return;
         }
     }
 };
 
 void callback(k_nearest::k_nearestConfig &config, uint32_t level) {
-    ROS_INFO("Setting distance difference: %d", 
-            config.distance_difference);
-
-    ROS_INFO("Setting distance limit filter: %d", 
-            config.distance_limit_filter);
 
     DISTANCE_DIFFERENCE_MANUAL_BOOL = config.distance_difference_manual_mode;
     DISTANCE_DIFFERENCE_MANUAL = config.distance_difference;
 
     DISTANCE_LIMIT_FILTER_MANUAL_BOOL = config.distance_limit_filter_manual_mode;
-    DISTANCE_LIMIT_FILTER_MANUAL = (float)config.distance_limit_filter/10;
+    DISTANCE_LIMIT_FILTER_MANUAL = (float) config.distance_limit_filter;
 
-    switch (config.color_selection) {
-        case 0:
-            COLOR_SELECT = "PURE_RED";
-            break;
-        case 1: 
-            COLOR_SELECT = "PURE_GREEN";
-            break;
-        case 2: 
-            COLOR_SELECT = "PURE_BLUE";
-            break;
-        case 3:
-            COLOR_SELECT = "WEIRD_RED";
-            break;
-        case 4:
-            COLOR_SELECT = "WEIRD_GREEN";
-            break;
-        case 5: 
-            COLOR_SELECT = "WEIRD_BLUE";
-            break;
-        case 6:
-            COLOR_SELECT = "WEIRD_YELLOW";
-            break;
-        case 7:
-            COLOR_SELECT = "BRIGHTER_BLUE";
-            break;
+    if (DISTANCE_DIFFERENCE_MANUAL_BOOL) {
+        ROS_INFO("Setting distance difference: %d", 
+            config.distance_difference);
+
+        ROS_INFO("Setting distance limit filter: %lf", 
+            config.distance_limit_filter);
     }
-    ROS_INFO("Setting detection to detect: %s", COLOR_SELECT.c_str());
+
+    MANUAL_COLORS_BOOL = config.manual_color_set;
+
+    if (MANUAL_COLORS_BOOL) {
+        MANUAL_L = config.L;
+        MANUAL_A = config.A;
+        MANUAL_B = config.B;
+    } else {
+        switch (config.color_selection) {
+            case 0:
+                COLOR_SELECT = "PURE_RED";
+                break;
+            case 1: 
+                COLOR_SELECT = "PURE_GREEN";
+                break;
+            case 2: 
+                COLOR_SELECT = "PURE_BLUE";
+                break;
+            case 3:
+                COLOR_SELECT = "WEIRD_RED";
+                break;
+            case 4:
+                COLOR_SELECT = "WEIRD_GREEN";
+                break;
+            case 5: 
+                COLOR_SELECT = "WEIRD_BLUE";
+                break;
+            case 6:
+                COLOR_SELECT = "WEIRD_YELLOW";
+                break;
+            case 7:
+                COLOR_SELECT = "BRIGHTER_BLUE";
+                break;
+        }
+        ROS_INFO("Setting detection to detect: %s", COLOR_SELECT.c_str());
+    }
+
+    CLIMB = config.speed_of_adjustment;
+    ROS_INFO("Setting adjustment speed: %lf", CLIMB);
 }
 
 int main(int argc, char** argv)
