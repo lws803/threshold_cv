@@ -285,15 +285,20 @@ public:
         cv_bridge::CvImagePtr cv_ptr;
         if (STREAM_ON) {
             try {
+                cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+
                 if (image_pub_.getNumSubscribers()) {
-                    cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
                     resize (cv_ptr->image, cv_ptr->image, Size(), 0.3, 0.3);
                     pipeline myPipeline = pipeline(cv_ptr->image, MULTIPLER_GLOBAL);
                     // cout << myPipeline.getRealMin() << endl;
                     MULTIPLER_GLOBAL = myPipeline.getProposedMultipler();
-                    sensor_msgs::ImagePtr output_msg = cv_bridge::CvImage(std_msgs::Header(), "8UC1", myPipeline.visualise()).toImageMsg();
 
                     // Output modified video stream
+                    sensor_msgs::ImagePtr output_msg = cv_bridge::CvImage(std_msgs::Header(), "8UC1", myPipeline.visualise()).toImageMsg();
+                    image_pub_.publish(output_msg);
+
+                } else {
+                    sensor_msgs::ImagePtr output_msg = cv_bridge::CvImage(std_msgs::Header(), "BGR8", cv_ptr->image).toImageMsg();
                     image_pub_.publish(output_msg);
                 }
             } catch (cv_bridge::Exception& e) {

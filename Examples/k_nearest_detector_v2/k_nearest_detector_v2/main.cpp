@@ -26,7 +26,7 @@ using namespace std;
 
 
 float MIN_GLOBAL, MAX_GLOBAL;
-string COLOR_SELECT = "SELECTIVE_PURE_RED";
+string COLOR_SELECT = "DARK_BLUE";
 
 class ColorMap {
     vector<float> colorArray = {0,0,0};
@@ -46,6 +46,9 @@ public:
         }
         else if (COLOR_SELECT == "PURE_YELLOW") {
             colorArray = {97.139/100 * 255, -21.558 + 127,  94.477 + 127};
+        }
+        else if (COLOR_SELECT == "DARK_BLUE") {
+            colorArray = {59.63809243087766, 155.53883029721956, 72.9886599207069};
         }
         else if (COLOR_SELECT == "SELECTIVE_PURE_RED") {
             /**
