@@ -16,14 +16,7 @@
 using namespace cv;
 using namespace std;
 
-/**
- * Three parameters to tune
- * COLOR_SELECT lets you choose what color you wish to target
- * DISTANCE_DIFFERENCE determines the max distance you wish to stretch the color space (makes colors more distinct)
- * DISTANCE_LIMIT_FILTER additional filter to make sure that we only perform adaptive if it is below a certain distance
- * OUTPUT_MODE determines which output you wish to view
- */
-
+// TODO: Experiment and write proper methods for the filtering
 
 // BGR
 vector<vector<float> > colors = {
@@ -44,7 +37,7 @@ class pipeline {
     }
     
     Mat preprocessor (Mat input) {
-        Mat lab_image = input;
+        Mat lab_image = input.clone();
         
         // Gaussian blurring
         //        GaussianBlur(input, lab_image, Size( 5, 5 ), 0, 0);
@@ -63,9 +56,11 @@ class pipeline {
     
     Mat k_nearest (Mat lab_image) {
         Mat LAB[3];
+        Mat BGR[3];
         Mat outputImg;
         split(lab_image, LAB);
-        
+        split(this->inputImg, BGR);
+
         Mat img_b (lab_image.rows, lab_image.cols, CV_8UC1, Scalar(0,0,0));
         Mat img_g (lab_image.rows, lab_image.cols, CV_8UC1, Scalar(0,0,0));
         Mat img_r (lab_image.rows, lab_image.cols, CV_8UC1, Scalar(0,0,0));
@@ -102,9 +97,31 @@ class pipeline {
                  * Normal color filtering
                  * Using distances as a multiplier to select channels RGB
                  */
-                img_b.at<uchar>(i, d) = (362 - dist_b)/362 *255;
-                img_g.at<uchar>(i, d) = (362 - dist_g)/362 *255;
-                img_r.at<uchar>(i, d) = (362 - dist_r)/362 *255;
+//                img_b.at<uchar>(i, d) = (362 - dist_b)/362 *255;
+//                img_g.at<uchar>(i, d) = (362 - dist_g)/362 *255;
+//                img_r.at<uchar>(i, d) = (362 - dist_r)/362 *255;
+                
+                
+                // Selective filtering
+                img_b.at<uchar>(i, d) = BGR[0].at<uchar>(i, d);
+                img_g.at<uchar>(i, d) = BGR[1].at<uchar>(i, d);
+                img_r.at<uchar>(i, d) = BGR[2].at<uchar>(i, d);
+
+                if (dist_b < 50) {
+                    img_b.at<uchar>(i, d) *= 1.1;
+                    if (img_b.at<uchar>(i, d) >= 255) img_b.at<uchar>(i, d) = 254;
+                }
+
+                if (dist_g < 50) {
+                    img_g.at<uchar>(i, d)  *= 1.1;
+                    if (img_g.at<uchar>(i, d) >= 255) img_g.at<uchar>(i, d) = 254;
+                }
+
+                if (dist_r < 362) {
+                    img_r.at<uchar>(i, d) *= 1.1;
+                    if (img_r.at<uchar>(i, d) >= 255) img_r.at<uchar>(i, d) = 254;
+                }
+                
             }
         }
         
@@ -120,14 +137,14 @@ class pipeline {
 public:
     pipeline (Mat input) {
         // constructor
-        time_t start, end;
-        time(&start);
+//        time_t start, end;
+//        time(&start);
         this->inputImg = input;
         this->preprocessed = preprocessor(this->inputImg);
         this->processed = k_nearest(this->preprocessed);
         
-        time(&end);
-        double seconds = difftime (end, start);
+//        time(&end);
+//        double seconds = difftime (end, start);
         
         //        cout << (double)seconds << endl;
     }
@@ -147,14 +164,14 @@ int main(int argc, char ** argv) {
         Mat output;
         cap.read(source);
         resize(source, source, Size(), 0.3, 0.3);
-        imshow("Source", source);
         pipeline myPipeline = pipeline(source);
         
         namedWindow("Output", WINDOW_AUTOSIZE);
         
-        resize(myPipeline.visualise(), output, Size(), 2, 2); // upscale it up
+//        resize(myPipeline.visualise(), output, Size(), 2, 2); // upscale it up
         
-        imshow("Output", output);
+        imshow("Output", myPipeline.visualise());
+        imshow("Source", source);
         waitKey(1);
     }
     return 0;

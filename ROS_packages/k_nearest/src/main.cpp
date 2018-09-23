@@ -136,7 +136,7 @@ class pipeline {
     }
     
     Mat preprocessor (Mat input) {
-        Mat lab_image = input;
+        Mat lab_image = input.clone();
         
         // Gaussian blurring
         // GaussianBlur(input, lab_image, Size( 5, 5 ), 0, 0);
