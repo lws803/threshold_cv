@@ -26,7 +26,7 @@ using namespace std;
 
 
 float MIN_GLOBAL, MAX_GLOBAL;
-string COLOR_SELECT = "DARK_BLUE";
+string COLOR_SELECT = "SELECTIVE_PURE_RED";
 float CLIMB = 0.1;
 
 class ColorMap {

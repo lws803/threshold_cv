@@ -7,14 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		C814EB7A2146CE8A003339C8 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C814EB792146CE8A003339C8 /* main.cpp */; };
-		C814EB812146CF6F003339C8 /* libopencv_imgproc.3.4.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C814EB802146CF6E003339C8 /* libopencv_imgproc.3.4.2.dylib */; };
-		C814EB832146CF76003339C8 /* libopencv_core.3.4.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C814EB822146CF76003339C8 /* libopencv_core.3.4.2.dylib */; };
-		C814EB852146CF83003339C8 /* libopencv_highgui.3.4.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C814EB842146CF83003339C8 /* libopencv_highgui.3.4.2.dylib */; };
+		C8042B052157F0740013476C /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C8042B042157F0740013476C /* main.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		C814EB742146CE8A003339C8 /* CopyFiles */ = {
+		C8042AFF2157F0740013476C /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = /usr/share/man/man1/;
@@ -26,118 +23,115 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		C814EB762146CE8A003339C8 /* k_nearest_detector_v2 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = k_nearest_detector_v2; sourceTree = BUILT_PRODUCTS_DIR; };
-		C814EB792146CE8A003339C8 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		C814EB802146CF6E003339C8 /* libopencv_imgproc.3.4.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_imgproc.3.4.2.dylib; path = ../../k_image_enhancer/k_image_enhancer/libopencv_imgproc.3.4.2.dylib; sourceTree = "<group>"; };
-		C814EB822146CF76003339C8 /* libopencv_core.3.4.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_core.3.4.2.dylib; path = ../../k_image_enhancer/k_image_enhancer/libopencv_core.3.4.2.dylib; sourceTree = "<group>"; };
-		C814EB842146CF83003339C8 /* libopencv_highgui.3.4.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_highgui.3.4.2.dylib; path = ../../k_image_enhancer/k_image_enhancer/libopencv_highgui.3.4.2.dylib; sourceTree = "<group>"; };
+		C8042B012157F0740013476C /* k_image_enhancer */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = k_image_enhancer; sourceTree = BUILT_PRODUCTS_DIR; };
+		C8042B042157F0740013476C /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		C8042B0B2157F0870013476C /* libopencv_core.3.4.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libopencv_core.3.4.2.dylib; sourceTree = "<group>"; };
+		C8042B0C2157F0880013476C /* libopencv_imgproc.3.4.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libopencv_imgproc.3.4.2.dylib; sourceTree = "<group>"; };
+		C8042B0D2157F0890013476C /* libopencv_highgui.3.4.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; path = libopencv_highgui.3.4.2.dylib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		C814EB732146CE8A003339C8 /* Frameworks */ = {
+		C8042AFE2157F0740013476C /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C814EB852146CF83003339C8 /* libopencv_highgui.3.4.2.dylib in Frameworks */,
-				C814EB812146CF6F003339C8 /* libopencv_imgproc.3.4.2.dylib in Frameworks */,
-				C814EB832146CF76003339C8 /* libopencv_core.3.4.2.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		C814EB6D2146CE8A003339C8 = {
+		C8042AF82157F0740013476C = {
 			isa = PBXGroup;
 			children = (
-				C814EB782146CE8A003339C8 /* k_nearest_detector_v2 */,
-				C814EB772146CE8A003339C8 /* Products */,
+				C8042B032157F0740013476C /* k_image_enhancer */,
+				C8042B022157F0740013476C /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		C814EB772146CE8A003339C8 /* Products */ = {
+		C8042B022157F0740013476C /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				C814EB762146CE8A003339C8 /* k_nearest_detector_v2 */,
+				C8042B012157F0740013476C /* k_image_enhancer */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		C814EB782146CE8A003339C8 /* k_nearest_detector_v2 */ = {
+		C8042B032157F0740013476C /* k_image_enhancer */ = {
 			isa = PBXGroup;
 			children = (
-				C814EB792146CE8A003339C8 /* main.cpp */,
-				C814EB802146CF6E003339C8 /* libopencv_imgproc.3.4.2.dylib */,
-				C814EB822146CF76003339C8 /* libopencv_core.3.4.2.dylib */,
-				C814EB842146CF83003339C8 /* libopencv_highgui.3.4.2.dylib */,
+				C8042B042157F0740013476C /* main.cpp */,
+				C8042B0C2157F0880013476C /* libopencv_imgproc.3.4.2.dylib */,
+				C8042B0B2157F0870013476C /* libopencv_core.3.4.2.dylib */,
+				C8042B0D2157F0890013476C /* libopencv_highgui.3.4.2.dylib */,
 			);
-			path = k_nearest_detector_v2;
+			path = k_image_enhancer;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		C814EB752146CE8A003339C8 /* k_nearest_detector_v2 */ = {
+		C8042B002157F0740013476C /* k_image_enhancer */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = C814EB7D2146CE8A003339C8 /* Build configuration list for PBXNativeTarget "k_nearest_detector_v2" */;
+			buildConfigurationList = C8042B082157F0740013476C /* Build configuration list for PBXNativeTarget "k_image_enhancer" */;
 			buildPhases = (
-				C814EB722146CE8A003339C8 /* Sources */,
-				C814EB732146CE8A003339C8 /* Frameworks */,
-				C814EB742146CE8A003339C8 /* CopyFiles */,
+				C8042AFD2157F0740013476C /* Sources */,
+				C8042AFE2157F0740013476C /* Frameworks */,
+				C8042AFF2157F0740013476C /* CopyFiles */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
-			name = k_nearest_detector_v2;
-			productName = k_nearest_detector_v2;
-			productReference = C814EB762146CE8A003339C8 /* k_nearest_detector_v2 */;
+			name = k_image_enhancer;
+			productName = k_image_enhancer;
+			productReference = C8042B012157F0740013476C /* k_image_enhancer */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		C814EB6E2146CE8A003339C8 /* Project object */ = {
+		C8042AF92157F0740013476C /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0940;
+				LastUpgradeCheck = 1000;
 				ORGANIZATIONNAME = "Ler Wilson";
 				TargetAttributes = {
-					C814EB752146CE8A003339C8 = {
-						CreatedOnToolsVersion = 9.4.1;
+					C8042B002157F0740013476C = {
+						CreatedOnToolsVersion = 10.0;
 					};
 				};
 			};
-			buildConfigurationList = C814EB712146CE8A003339C8 /* Build configuration list for PBXProject "k_nearest_detector_v2" */;
+			buildConfigurationList = C8042AFC2157F0740013476C /* Build configuration list for PBXProject "k_image_enhancer" */;
 			compatibilityVersion = "Xcode 9.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 			);
-			mainGroup = C814EB6D2146CE8A003339C8;
-			productRefGroup = C814EB772146CE8A003339C8 /* Products */;
+			mainGroup = C8042AF82157F0740013476C;
+			productRefGroup = C8042B022157F0740013476C /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				C814EB752146CE8A003339C8 /* k_nearest_detector_v2 */,
+				C8042B002157F0740013476C /* k_image_enhancer */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
-		C814EB722146CE8A003339C8 /* Sources */ = {
+		C8042AFD2157F0740013476C /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C814EB7A2146CE8A003339C8 /* main.cpp in Sources */,
+				C8042B052157F0740013476C /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		C814EB7B2146CE8A003339C8 /* Debug */ = {
+		C8042B062157F0740013476C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -189,13 +183,14 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
-				MTL_ENABLE_DEBUG_INFO = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 			};
 			name = Debug;
 		};
-		C814EB7C2146CE8A003339C8 /* Release */ = {
+		C8042B072157F0740013476C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -242,22 +237,18 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
 			};
 			name = Release;
 		};
-		C814EB7E2146CE8A003339C8 /* Debug */ = {
+		C8042B092157F0740013476C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 76TEJDZD6D;
-				HEADER_SEARCH_PATHS = (
-					"/usr/local/Cellar/opencv/3.4.2/include\n/usr/local/Cellar/opencv/3.4.2/include\n",
-				);
-				LIBRARY_SEARCH_PATHS = (
-					/usr/local/lib,
-					"$(PROJECT_DIR)/k_nearest_detector_v2",
-				);
+				HEADER_SEARCH_PATHS = "/usr/local/Cellar/opencv/3.4.2/include\n";
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				OTHER_LDFLAGS = (
 					"-lopencv_calib3d",
 					"-lopencv_core",
@@ -280,18 +271,13 @@
 			};
 			name = Debug;
 		};
-		C814EB7F2146CE8A003339C8 /* Release */ = {
+		C8042B0A2157F0740013476C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 76TEJDZD6D;
-				HEADER_SEARCH_PATHS = (
-					"/usr/local/Cellar/opencv/3.4.2/include\n/usr/local/Cellar/opencv/3.4.2/include\n",
-				);
-				LIBRARY_SEARCH_PATHS = (
-					/usr/local/lib,
-					"$(PROJECT_DIR)/k_nearest_detector_v2",
-				);
+				HEADER_SEARCH_PATHS = "/usr/local/Cellar/opencv/3.4.2/include\n";
+				LIBRARY_SEARCH_PATHS = /usr/local/lib;
 				OTHER_LDFLAGS = (
 					"-lopencv_calib3d",
 					"-lopencv_core",
@@ -317,25 +303,25 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		C814EB712146CE8A003339C8 /* Build configuration list for PBXProject "k_nearest_detector_v2" */ = {
+		C8042AFC2157F0740013476C /* Build configuration list for PBXProject "k_image_enhancer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				C814EB7B2146CE8A003339C8 /* Debug */,
-				C814EB7C2146CE8A003339C8 /* Release */,
+				C8042B062157F0740013476C /* Debug */,
+				C8042B072157F0740013476C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C814EB7D2146CE8A003339C8 /* Build configuration list for PBXNativeTarget "k_nearest_detector_v2" */ = {
+		C8042B082157F0740013476C /* Build configuration list for PBXNativeTarget "k_image_enhancer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				C814EB7E2146CE8A003339C8 /* Debug */,
-				C814EB7F2146CE8A003339C8 /* Release */,
+				C8042B092157F0740013476C /* Debug */,
+				C8042B0A2157F0740013476C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = C814EB6E2146CE8A003339C8 /* Project object */;
+	rootObject = C8042AF92157F0740013476C /* Project object */;
 }
