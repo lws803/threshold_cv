@@ -70,7 +70,7 @@ cv2.namedWindow('threshold', cv2.WINDOW_NORMAL)
 
 
 # Declare more thresholds here, make sure to add them to the dictionary 
-thresholds = {'L_high' : 219, 'A_high': 189, 'B_high': 164, 'L_low': 15, 'A_low': 134, 'B_low': 123}
+thresholds = {'L_high' : 117, 'A_high': 127, 'B_high': 254, 'L_low': 0, 'A_low': 119, 'B_low': 135}
 
 def callback(x):
     pass

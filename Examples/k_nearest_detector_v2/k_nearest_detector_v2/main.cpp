@@ -178,15 +178,16 @@ class pipeline {
             }
         }
         
+        // TODO: Double check this
         if (REAL_MIN > myColorChoice.getMinHardStop()) {
             // Ignore everything
             img = Mat(lab_image.rows, lab_image.cols, CV_8UC1, Scalar(0));
+        } else {
+            MAX_GLOBAL = max;
+            MIN_GLOBAL = min;
+            
+            autoAdjust(max, min);
         }
-        
-        MAX_GLOBAL = max;
-        MIN_GLOBAL = min;
-        
-        autoAdjust(max, min);
         
         return img;
     }

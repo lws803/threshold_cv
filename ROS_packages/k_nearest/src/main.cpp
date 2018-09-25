@@ -44,6 +44,7 @@ class ColorMap {
     vector<float> colorArray = {0,0,0};
     int DISTANCE_DIFFERENCE = 1000;
     float DISTANCE_LIMIT_FILTER = 255; // More means larger allowance
+    float MIN_HARDSTOP = 50; // More means more leeway. Use this to stop detection if color you want is really not in view
 
 public:
     ColorMap (string COLOR_SELECT) {
@@ -204,12 +205,17 @@ class pipeline {
                 img.at<uchar>(i, d) = 255 - round(dist);
             }
         }
-        
-        MAX_GLOBAL = max;
-        MIN_GLOBAL = min;
-        
-        autoAdjust(max, min);
-        
+        // TODO: Double check this
+        if (REAL_MIN > myColorChoice.getMinHardStop()) {
+            // Ignore everything
+            img = Mat(lab_image.rows, lab_image.cols, CV_8UC1, Scalar(0));
+        } else {
+            MAX_GLOBAL = max;
+            MIN_GLOBAL = min;
+            
+            autoAdjust(max, min);
+        }
+
         return img;
     }
     
@@ -363,6 +369,9 @@ void callback(k_nearest::k_nearestConfig &config, uint32_t level) {
                 break;
             case 7:
                 COLOR_SELECT = "BRIGHTER_BLUE";
+                break;
+            case 8:
+                COLOR_SELECT = "PURE_YELLOW";
                 break;
         }
         ROS_INFO("Setting detection to detect: %s", COLOR_SELECT.c_str());
