@@ -26,14 +26,14 @@ using namespace std;
 
 
 float MIN_GLOBAL, MAX_GLOBAL;
-string COLOR_SELECT = "SELECTIVE_PURE_RED";
+string COLOR_SELECT = "PURE_YELLOW";
 float CLIMB = 0.1;
 
 class ColorMap {
     vector<float> colorArray = {0,0,0};
     int DISTANCE_DIFFERENCE = 1000;
     float DISTANCE_LIMIT_FILTER = 370; // More means larger allowance (max is 370)
-    
+    float MIN_HARDSTOP = 50; // More means more leeway. Use this to stop detection if color you want is really not in view
 public:
     ColorMap (string COLOR_SELECT) {
         if (COLOR_SELECT == "PURE_RED") {
@@ -76,6 +76,9 @@ public:
     }
     float getDistanceLimitFilter () {
         return DISTANCE_LIMIT_FILTER;
+    }
+    float getMinHardStop () {
+        return MIN_HARDSTOP;
     }
 };
 
@@ -173,6 +176,11 @@ class pipeline {
                 }                
                 img.at<uchar>(i, d) = 255 - round(dist);
             }
+        }
+        
+        if (REAL_MIN > myColorChoice.getMinHardStop()) {
+            // Ignore everything
+            img = Mat(lab_image.rows, lab_image.cols, CV_8UC1, Scalar(0));
         }
         
         MAX_GLOBAL = max;
