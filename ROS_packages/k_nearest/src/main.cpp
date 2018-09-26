@@ -19,6 +19,8 @@
 #include <dynamic_reconfigure/server.h>
 #include <k_nearest/k_nearestConfig.h>
 
+#define INT_INF 2147483640
+
 using namespace cv;
 using namespace std;
 using namespace ros;
@@ -108,6 +110,9 @@ public:
     float getDistanceLimitFilter () {
         return DISTANCE_LIMIT_FILTER;
     }
+    float getMinHardStop () {
+        return MIN_HARDSTOP;
+    }
 };
 
 
@@ -116,7 +121,7 @@ class pipeline {
     ColorMap myColorChoice = ColorMap(COLOR_SELECT);
 
     float MULTIPLIER = 10;
-    float REAL_MIN = 2147483640;
+    float REAL_MIN = INT_INF;
     
     enum FUNCTION_TYPE {
         QUADRATIC, MULTIPLICATIVE
@@ -175,7 +180,7 @@ class pipeline {
         
         Mat img(lab_image.rows, lab_image.cols, CV_8UC1, Scalar(0));
         
-        float min = 255 * MULTIPLIER;
+        float min = INT_INF;
         float max = 0;
         
         // Main processing
@@ -302,7 +307,7 @@ public:
             cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
 
             if (image_pub_.getNumSubscribers()) {
-                resize (cv_ptr->image, cv_ptr->image, Size(), 0.3, 0.3);
+                resize (cv_ptr->image, cv_ptr->image, Size(), 0.25, 0.25);
                 pipeline myPipeline = pipeline(cv_ptr->image, MULTIPLER_GLOBAL);
                 // cout << myPipeline.getRealMin() << endl;
                 MULTIPLER_GLOBAL = myPipeline.getProposedMultipler();

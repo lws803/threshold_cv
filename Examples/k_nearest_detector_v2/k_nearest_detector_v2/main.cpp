@@ -12,6 +12,7 @@
 #include "opencv2/imgproc.hpp"
 #include "opencv2/core.hpp"
 #include "opencv2/highgui.hpp"
+#define INT_INF 2147483640
 
 using namespace cv;
 using namespace std;
@@ -22,11 +23,12 @@ using namespace std;
  * DISTANCE_DIFFERENCE determines the max distance you wish to stretch the color space (makes colors more distinct)
  * DISTANCE_LIMIT_FILTER additional filter to make sure that we only perform adaptive if it is below a certain distance
  * OUTPUT_MODE determines which output you wish to view
+ * MIN_HARDSTOP determines the cut off before no masking is shown at all
 */
 
 
 float MIN_GLOBAL, MAX_GLOBAL;
-string COLOR_SELECT = "PURE_YELLOW";
+string COLOR_SELECT = "DARK_BLUE";
 float CLIMB = 0.1;
 
 class ColorMap {
@@ -49,7 +51,8 @@ public:
             colorArray = {97.139/100 * 255, -21.558 + 127,  94.477 + 127};
         }
         else if (COLOR_SELECT == "DARK_BLUE") {
-            colorArray = {59.63809243087766, 155.53883029721956, 72.9886599207069};
+            colorArray = {560.46250333244468, 172.92754932018127, 61.59167222074114};
+            MIN_HARDSTOP = 17;
         }
         else if (COLOR_SELECT == "SELECTIVE_PURE_RED") {
             /**
@@ -88,7 +91,7 @@ class pipeline {
     ColorMap myColorChoice = ColorMap(COLOR_SELECT);
 
     float MULTIPLIER = 10;
-    float REAL_MIN = 2147483640;
+    float REAL_MIN = INT_INF;
     
     enum FUNCTION_TYPE {
         QUADRATIC, MULTIPLICATIVE
@@ -147,7 +150,7 @@ class pipeline {
         
         Mat img(lab_image.rows, lab_image.cols, CV_8UC1, Scalar(0));
         
-        float min = 255 * MULTIPLIER;
+        float min = INT_INF;
         float max = 0;
         
         // Main processing
@@ -269,6 +272,7 @@ int main(int argc, char ** argv) {
 
         namedWindow("My Window", WINDOW_AUTOSIZE);
         multiplier = myPipeline.getProposedMultipler(); // To auto adjust
+        cout << myPipeline.getRealMin() << endl;
 
         resize(myPipeline.visualise(), output, Size(), 2, 2); // upscale it up
         
