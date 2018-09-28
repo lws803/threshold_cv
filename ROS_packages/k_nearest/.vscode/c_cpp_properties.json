@@ -1,0 +1,23 @@
+{
+    "configurations": [
+        {
+            "browse": {
+                "databaseFilename": "",
+                "limitSymbolsToIncludedHeaders": true
+            },
+            "includePath": [
+                "/home/lws803/Desktop/catkin_ws/devel/include",
+                "/opt/ros/kinetic/include",
+                "/home/lws803/Desktop/catkin_ws/src/k_nearest/include",
+                "/home/lws803/Desktop/catkin_ws/src/iai_kinect2/kinect2_calibration/include",
+                "/home/lws803/Desktop/catkin_ws/src/iai_kinect2/kinect2_bridge/include",
+                "/home/lws803/Desktop/catkin_ws/src/iai_kinect2/kinect2_registration/include",
+                "/home/lws803/Desktop/catkin_ws/src/vision_msgs/include",
+                "/usr/include"
+            ],
+            "name": "Linux",
+            "intelliSenseMode": "gcc-x64"
+        }
+    ],
+    "version": 4
+}

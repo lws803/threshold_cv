@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>k_nearest</name>
+  <name>k_segment</name>
   <version>0.0.0</version>
   <description>The k_nearest package</description>
 

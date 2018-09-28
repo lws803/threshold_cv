@@ -1,11 +1,3 @@
-//
-//  main.cpp
-//  k_nearest_detector_v2
-//
-//  Created by Ler Wilson on 11/9/18.
-//  Copyright © 2018 Ler Wilson. All rights reserved.
-//
-
 #include <iostream>
 #include <stdio.h>
 #include <stdarg.h>
@@ -16,8 +8,9 @@
 #include <sensor_msgs/Image.h>
 #include <cv_bridge/cv_bridge.h>
 #include "ros/ros.h"
-#include <dynamic_reconfigure/server.h>
-#include <k_nearest/k_segmentConfig.h>
+#include <map>
+#include <unordered_map>
+
 
 #define INT_INF 2147483640
 
@@ -25,22 +18,7 @@ using namespace cv;
 using namespace std;
 using namespace ros;
 
-float MULTIPLER_GLOBAL = 10;
-float MIN_GLOBAL, MAX_GLOBAL;
 image_transport::Publisher image_pub;
-
-string COLOR_SELECT = "PURE_GREEN";
-bool DISTANCE_DIFFERENCE_MANUAL_BOOL = false;
-int DISTANCE_DIFFERENCE_MANUAL;
-bool DISTANCE_LIMIT_FILTER_MANUAL_BOOL = false;
-float DISTANCE_LIMIT_FILTER_MANUAL;
-
-bool MANUAL_COLORS_BOOL = false;
-float MANUAL_L = 0;
-float MANUAL_A = 0;
-float MANUAL_B = 0;
-
-float CLIMB = 0.1;
 
 
 class Colors {
@@ -53,8 +31,8 @@ public:
         colors["red"] = {138.4, 207.81, 196.89};
         colors["yellow"] = {175.14135491, 116.86378348, 180.24186594};
         
-        thresholds["red"] = 50;
-        thresholds["yellow"] = 20;
+        thresholds["red"] = 70;
+        thresholds["yellow"] = 10;
     }
     
     int getNumColors () {
@@ -94,14 +72,6 @@ class Pipeline {
     }
     
     
-    float cut_off_dist (float dist) {
-        if (dist > 255) dist = 255;
-        if (dist < 0) dist = 0;
-        
-        return dist;
-    }
-    
-    
     Mat k_nearest (Mat lab_image) {
         Mat LAB[3];
         split(lab_image, LAB);
@@ -121,7 +91,7 @@ class Pipeline {
                 for (int c = 0; c < colorBank.getNumColors(); c++) {
                     vector<float> color = colorBank.getColorFromIndex(c);
                     float dist = cartesian_dist(color, lab_channels);
-                    if (dist < 60) {
+                    if (dist < colorBank.getThreshold(c)) {
                         colorMap[dist] = color;
                     }
                 }
@@ -179,7 +149,7 @@ public:
     ImageConverter()
     : it_(nh_) {
         // Subscrive to input video feed and publish output video feed
-        image_sub_ = it_.subscribe("asv/camera2/image_color", 1,
+        image_sub_ = it_.subscribe("kinect2/hd/image_color", 1,
         &ImageConverter::imageCb, this);
         image_pub_ = it_.advertise("k_segment_viewer", 1);
     }
@@ -196,14 +166,13 @@ public:
                 resize (cv_ptr->image, cv_ptr->image, Size(), 0.25, 0.25);
                 Pipeline myPipeline = Pipeline(cv_ptr->image);
                 // cout << myPipeline.getRealMin() << endl;
-                MULTIPLER_GLOBAL = myPipeline.getProposedMultipler();
 
                 // Output modified video stream
-                sensor_msgs::ImagePtr output_msg = cv_bridge::CvImage(std_msgs::Header(), "8UC3", myPipeline.visualise()).toImageMsg();
+                sensor_msgs::ImagePtr output_msg = cv_bridge::CvImage(std_msgs::Header(), "rgb8", myPipeline.visualise()).toImageMsg();
                 image_pub_.publish(output_msg);
 
             } else {
-                sensor_msgs::ImagePtr output_msg = cv_bridge::CvImage(std_msgs::Header(), "BGR8", cv_ptr->image).toImageMsg();
+                sensor_msgs::ImagePtr output_msg = cv_bridge::CvImage(std_msgs::Header(), "rgb8", cv_ptr->image).toImageMsg();
                 image_pub_.publish(output_msg);
             }
         } catch (cv_bridge::Exception& e) {
@@ -215,81 +184,10 @@ public:
 
 
 
-void callback(k_nearest::k_nearestConfig &config, uint32_t level) {
-
-    DISTANCE_DIFFERENCE_MANUAL_BOOL = config.distance_difference_manual_mode;
-    DISTANCE_DIFFERENCE_MANUAL = config.distance_difference;
-
-    DISTANCE_LIMIT_FILTER_MANUAL_BOOL = config.distance_limit_filter_manual_mode;
-    DISTANCE_LIMIT_FILTER_MANUAL = (float) config.distance_limit_filter;
-
-    if (DISTANCE_DIFFERENCE_MANUAL_BOOL) {
-        ROS_INFO("Setting distance difference: %d", 
-            config.distance_difference);
-
-        ROS_INFO("Setting distance limit filter: %lf", 
-            config.distance_limit_filter);
-    }
-
-    MANUAL_COLORS_BOOL = config.manual_color_set;
-
-    if (MANUAL_COLORS_BOOL) {
-        MANUAL_L = config.L;
-        MANUAL_A = config.A;
-        MANUAL_B = config.B;
-    } else {
-        switch (config.color_selection) {
-            case 0:
-                COLOR_SELECT = "PURE_RED";
-                break;
-            case 1: 
-                COLOR_SELECT = "PURE_GREEN";
-                break;
-            case 2: 
-                COLOR_SELECT = "PURE_BLUE";
-                break;
-            case 3:
-                COLOR_SELECT = "WEIRD_RED";
-                break;
-            case 4:
-                COLOR_SELECT = "WEIRD_GREEN";
-                break;
-            case 5: 
-                COLOR_SELECT = "WEIRD_BLUE";
-                break;
-            case 6:
-                COLOR_SELECT = "WEIRD_YELLOW";
-                break;
-            case 7:
-                COLOR_SELECT = "BRIGHTER_BLUE";
-                break;
-            case 8:
-                COLOR_SELECT = "PURE_YELLOW";
-                break;
-        }
-        ROS_INFO("Setting detection to detect: %s", COLOR_SELECT.c_str());
-    }
-
-    CLIMB = config.speed_of_adjustment;
-    ROS_INFO("Setting adjustment speed: %lf", CLIMB);
-}
-
 int main(int argc, char** argv)
 {
-    if (argc > 1) {
-        vector<string> args(argv, argv + argc);
-        cout << args[1] << endl;
-        COLOR_SELECT = args[1];
-    }
     init(argc, argv, "k_segment_detector");
     ImageConverter ic;
-
-    dynamic_reconfigure::Server<k_nearest::k_nearestConfig> server;
-    dynamic_reconfigure::Server<k_nearest::k_nearestConfig>::CallbackType f;
-
-    f = boost::bind(&callback, _1, _2);
-    server.setCallback(f);
-
 
     spin();
     return 0;
