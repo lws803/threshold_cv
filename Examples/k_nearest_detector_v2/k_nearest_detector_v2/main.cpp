@@ -28,7 +28,7 @@ using namespace std;
 
 
 float MIN_GLOBAL, MAX_GLOBAL;
-string COLOR_SELECT = "DARK_BLUE";
+string COLOR_SELECT = "CUSTOM";
 float CLIMB = 0.1;
 
 class ColorMap {
@@ -51,7 +51,7 @@ public:
             colorArray = {97.139/100 * 255, -21.558 + 127,  94.477 + 127};
         }
         else if (COLOR_SELECT == "DARK_BLUE") {
-            colorArray = {560.46250333244468, 172.92754932018127, 61.59167222074114};
+            colorArray = {56.14306376, 163.50908374, 72.79013131};
             MIN_HARDSTOP = 17;
         }
         else if (COLOR_SELECT == "SELECTIVE_PURE_RED") {
@@ -65,6 +65,9 @@ public:
             colorArray = {54.29/100 * 255, 80.81 + 127, 69.89 + 127};
             DISTANCE_DIFFERENCE = 200;
             DISTANCE_LIMIT_FILTER = 67;
+        }
+        else if (COLOR_SELECT == "CUSTOM") {
+            colorArray = {157.15862154, 118.09701874, 177.16864464};
         }
         else {
             colorArray = {97.139/100 * 255, -21.558 + 127,  94.477 + 127}; // PURE_YELLOW
@@ -267,12 +270,12 @@ int main(int argc, char ** argv) {
     while (true) {
         Mat output;
         cap.read(source);
-        resize(source, source, Size(), 0.3, 0.3);
+        resize(source, source, Size(), 0.25, 0.25);
         pipeline myPipeline = pipeline(source, multiplier);
 
         namedWindow("My Window", WINDOW_AUTOSIZE);
         multiplier = myPipeline.getProposedMultipler(); // To auto adjust
-        cout << myPipeline.getRealMin() << endl;
+//        cout << myPipeline.getRealMin() << endl;
 
         resize(myPipeline.visualise(), output, Size(), 2, 2); // upscale it up
         
