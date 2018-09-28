@@ -17,7 +17,7 @@
 #include <cv_bridge/cv_bridge.h>
 #include "ros/ros.h"
 #include <dynamic_reconfigure/server.h>
-#include <k_nearest/k_nearestConfig.h>
+#include <k_nearest/k_segmentConfig.h>
 
 #define INT_INF 2147483640
 
@@ -44,21 +44,27 @@ float CLIMB = 0.1;
 
 
 class Colors {
-    vector<vector<float> > colors;
+    unordered_map<string, vector<float> > colors;
+    unordered_map<string, float> thresholds;
+    vector<string> names = {"red", "yellow"};
     
 public:
     Colors () {
-        colors = {
-            {138.4, 207.81, 196.89}, // Red
-            {248.9, 111.25, 220.39} // Yellow
-            
-        };
+        colors["red"] = {138.4, 207.81, 196.89};
+        colors["yellow"] = {175.14135491, 116.86378348, 180.24186594};
+        
+        thresholds["red"] = 50;
+        thresholds["yellow"] = 20;
     }
+    
     int getNumColors () {
-        return colors.size();
+        return names.size();
     }
     vector<float> getColorFromIndex (int index) {
-        return colors[index];
+        return colors[names[index]];
+    }
+    float getThreshold (int index) {
+        return thresholds [names[index]];
     }
 };
 
