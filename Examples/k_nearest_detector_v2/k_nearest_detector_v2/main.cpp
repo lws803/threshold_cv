@@ -104,7 +104,7 @@ class pipeline {
     };
     
     FUNCTION_TYPE FUNCTION = MULTIPLICATIVE;
-    OUTPUT_MODE OUTPUT = MASKED;
+    OUTPUT_MODE OUTPUT = PROCESSED;
     
     
     float cartesian_dist (vector<float> colorArray, vector<uchar> lab_channels) {

@@ -8,9 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		C814EB7A2146CE8A003339C8 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = C814EB792146CE8A003339C8 /* main.cpp */; };
-		C814EB812146CF6F003339C8 /* libopencv_imgproc.3.4.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C814EB802146CF6E003339C8 /* libopencv_imgproc.3.4.2.dylib */; };
-		C814EB832146CF76003339C8 /* libopencv_core.3.4.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C814EB822146CF76003339C8 /* libopencv_core.3.4.2.dylib */; };
-		C814EB852146CF83003339C8 /* libopencv_highgui.3.4.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C814EB842146CF83003339C8 /* libopencv_highgui.3.4.2.dylib */; };
+		C8E5F7C6215E08B80092191B /* libopencv_core.3.4.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C8E5F7C3215E08B80092191B /* libopencv_core.3.4.2.dylib */; };
+		C8E5F7C7215E08B80092191B /* libopencv_highgui.3.4.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C8E5F7C4215E08B80092191B /* libopencv_highgui.3.4.2.dylib */; };
+		C8E5F7C8215E08B80092191B /* libopencv_imgproc.3.4.2.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = C8E5F7C5215E08B80092191B /* libopencv_imgproc.3.4.2.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -28,9 +28,9 @@
 /* Begin PBXFileReference section */
 		C814EB762146CE8A003339C8 /* k_nearest_detector_v2 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = k_nearest_detector_v2; sourceTree = BUILT_PRODUCTS_DIR; };
 		C814EB792146CE8A003339C8 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		C814EB802146CF6E003339C8 /* libopencv_imgproc.3.4.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_imgproc.3.4.2.dylib; path = ../../k_image_enhancer/k_image_enhancer/libopencv_imgproc.3.4.2.dylib; sourceTree = "<group>"; };
-		C814EB822146CF76003339C8 /* libopencv_core.3.4.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_core.3.4.2.dylib; path = ../../k_image_enhancer/k_image_enhancer/libopencv_core.3.4.2.dylib; sourceTree = "<group>"; };
-		C814EB842146CF83003339C8 /* libopencv_highgui.3.4.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_highgui.3.4.2.dylib; path = ../../k_image_enhancer/k_image_enhancer/libopencv_highgui.3.4.2.dylib; sourceTree = "<group>"; };
+		C8E5F7C3215E08B80092191B /* libopencv_core.3.4.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_core.3.4.2.dylib; path = ../../k_segment/k_segment/libopencv_core.3.4.2.dylib; sourceTree = "<group>"; };
+		C8E5F7C4215E08B80092191B /* libopencv_highgui.3.4.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_highgui.3.4.2.dylib; path = ../../k_segment/k_segment/libopencv_highgui.3.4.2.dylib; sourceTree = "<group>"; };
+		C8E5F7C5215E08B80092191B /* libopencv_imgproc.3.4.2.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libopencv_imgproc.3.4.2.dylib; path = ../../k_segment/k_segment/libopencv_imgproc.3.4.2.dylib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -38,9 +38,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C814EB852146CF83003339C8 /* libopencv_highgui.3.4.2.dylib in Frameworks */,
-				C814EB812146CF6F003339C8 /* libopencv_imgproc.3.4.2.dylib in Frameworks */,
-				C814EB832146CF76003339C8 /* libopencv_core.3.4.2.dylib in Frameworks */,
+				C8E5F7C7215E08B80092191B /* libopencv_highgui.3.4.2.dylib in Frameworks */,
+				C8E5F7C6215E08B80092191B /* libopencv_core.3.4.2.dylib in Frameworks */,
+				C8E5F7C8215E08B80092191B /* libopencv_imgproc.3.4.2.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -66,10 +66,10 @@
 		C814EB782146CE8A003339C8 /* k_nearest_detector_v2 */ = {
 			isa = PBXGroup;
 			children = (
+				C8E5F7C3215E08B80092191B /* libopencv_core.3.4.2.dylib */,
+				C8E5F7C4215E08B80092191B /* libopencv_highgui.3.4.2.dylib */,
+				C8E5F7C5215E08B80092191B /* libopencv_imgproc.3.4.2.dylib */,
 				C814EB792146CE8A003339C8 /* main.cpp */,
-				C814EB802146CF6E003339C8 /* libopencv_imgproc.3.4.2.dylib */,
-				C814EB822146CF76003339C8 /* libopencv_core.3.4.2.dylib */,
-				C814EB842146CF83003339C8 /* libopencv_highgui.3.4.2.dylib */,
 			);
 			path = k_nearest_detector_v2;
 			sourceTree = "<group>";
