@@ -29,10 +29,10 @@ class Colors {
 public:
     Colors () {
         colors["red"] = {138.4, 207.81, 196.89};
-        colors["yellow"] = {175.14135491, 116.86378348, 180.24186594};
+        colors["yellow"] = {152.66, 133.26, 169.2};
         
         thresholds["red"] = 70;
-        thresholds["yellow"] = 10;
+        thresholds["yellow"] = 23;
     }
     
     int getNumColors () {
