@@ -42,7 +42,7 @@ print ("[B,G,R]: " + str(np.true_divide(sumBGR, numFiles)))
 print ("\n\n")
 
 print ("\n\n===========================HSV===========================\n")
-print ("[B,G,R]: " + str(np.true_divide(sumHSV, numFiles)))
+print ("[H,S,V]: " + str(np.true_divide(sumHSV, numFiles)))
 
 print ("\n\n")
 
