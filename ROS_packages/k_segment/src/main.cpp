@@ -10,6 +10,8 @@
 #include "ros/ros.h"
 #include <map>
 #include <unordered_map>
+#include <dynamic_reconfigure/server.h>
+#include <k_segment/k_segmentConfig.h>
 
 
 #define INT_INF 2147483640
@@ -44,15 +46,19 @@ public:
     float getThreshold (int index) {
         return thresholds [names[index]];
     }
+
+    void setColor (string name, vector<float> color, float threshold) {
+        colors[name] = color;
+        thresholds[name] = threshold;
+    }
 };
 
-
+Colors colorBank;
 
 class Pipeline {
     Mat inputImg, processed, preprocessed;
     
     float REAL_MIN = INT_INF;
-    Colors colorBank;
     
     
     float cartesian_dist (vector<float> colorArray, vector<uchar> lab_channels) {
@@ -182,11 +188,23 @@ public:
     }
 };
 
+void callback(k_segment::k_segmentConfig &config, uint32_t level) {
+    vector<float> red = {config.L_red, config.A_red, config.B_red};
+    vector<float> yellow = {config.L_yellow, config.A_yellow, config.B_yellow};
 
+    colorBank.setColor("red", red, config.distance_cutoff_red);
+    colorBank.setColor("yellow", yellow, config.distance_cutoff_yellow);
+}
 
 int main(int argc, char** argv)
 {
     init(argc, argv, "k_segment_detector");
+    dynamic_reconfigure::Server<k_segment::k_segmentConfig> server;
+    dynamic_reconfigure::Server<k_segment::k_segmentConfig>::CallbackType f;
+
+    f = boost::bind(&callback, _1, _2);
+    server.setCallback(f);
+
     ImageConverter ic;
 
     spin();
