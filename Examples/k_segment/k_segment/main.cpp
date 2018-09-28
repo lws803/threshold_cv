@@ -13,6 +13,7 @@
 #include "opencv2/core.hpp"
 #include "opencv2/highgui.hpp"
 #include <map>
+#include <unordered_map>
 
 #define INT_INF 2147483640
 
@@ -20,21 +21,27 @@ using namespace cv;
 using namespace std;
 
 class Colors {
-    vector<vector<float> > colors;
+    unordered_map<string, vector<float> > colors;
+    unordered_map<string, float> thresholds;
+    vector<string> names = {"red", "yellow"};
     
 public:
     Colors () {
-        colors = {
-            {138.4, 207.81, 196.89}, // Red
-            {248.9, 111.25, 220.39} // Yellow
-            
-        };
+        colors["red"] = {138.4, 207.81, 196.89};
+        colors["yellow"] = {175.14135491, 116.86378348, 180.24186594};
+        
+        thresholds["red"] = 50;
+        thresholds["yellow"] = 20;
     }
+    
     int getNumColors () {
-        return colors.size();
+        return names.size();
     }
     vector<float> getColorFromIndex (int index) {
-        return colors[index];
+        return colors[names[index]];
+    }
+    float getThreshold (int index) {
+        return thresholds [names[index]];
     }
 };
 
@@ -89,7 +96,7 @@ class Pipeline {
                 for (int c = 0; c < colorBank.getNumColors(); c++) {
                     vector<float> color = colorBank.getColorFromIndex(c);
                     float dist = cartesian_dist(color, lab_channels);
-                    if (dist < 60) {
+                    if (dist < colorBank.getThreshold(c)) {
                         colorMap[dist] = color;
                     }
                 }
