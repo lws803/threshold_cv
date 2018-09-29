@@ -24,18 +24,21 @@ class Colors {
     unordered_map<string, vector<float> > colors;
     unordered_map<string, vector<float> > representativeColors;
     unordered_map<string, float> thresholds;
-    vector<string> names = {"red", "yellow"};
+    vector<string> names = {"red", "yellow", "blue"};
     
 public:
     Colors () {
         colors["red"] = {138.4, 207.81, 196.89};
         colors["yellow"] = {175.14135491, 116.86378348, 180.24186594};
+        colors["blue"] = {75.4, 195.3, 14,97};
         
         representativeColors["red"] = {0, 0, 255};
         representativeColors["yellow"] = {0, 255, 255};
+        representativeColors["blue"] = {255, 0, 0};
         
-        thresholds["red"] = 50;
+        thresholds["red"] = 65;
         thresholds["yellow"] = 20;
+        thresholds["blue"] = 90;
     }
     
     int getNumColors () {
