@@ -22,6 +22,7 @@ using namespace std;
 
 class Colors {
     unordered_map<string, vector<float> > colors;
+    unordered_map<string, vector<float> > representativeColors;
     unordered_map<string, float> thresholds;
     vector<string> names = {"red", "yellow"};
     
@@ -29,6 +30,9 @@ public:
     Colors () {
         colors["red"] = {138.4, 207.81, 196.89};
         colors["yellow"] = {175.14135491, 116.86378348, 180.24186594};
+        
+        representativeColors["red"] = {0, 0, 255};
+        representativeColors["yellow"] = {0, 255, 255};
         
         thresholds["red"] = 50;
         thresholds["yellow"] = 20;
@@ -43,13 +47,20 @@ public:
     float getThreshold (int index) {
         return thresholds [names[index]];
     }
+    vector<float> getRepresentativeColorFromName (string name) {
+        return representativeColors[name];
+    }
+    string getNameFromIndex (int index) {
+        return names[index];
+    }
 };
+
+Colors colorBank;
 
 class Pipeline {
     Mat inputImg, processed, preprocessed;
     
     float REAL_MIN = INT_INF;
-    Colors colorBank;
     
     
     float cartesian_dist (vector<float> colorArray, vector<uchar> lab_channels) {
@@ -91,13 +102,13 @@ class Pipeline {
                     LAB[1].at<uchar>(i, d),
                     LAB[2].at<uchar>(i, d)};
                 
-                map<float, vector<float>> colorMap;
+                map<float, string> colorMap;
                 
                 for (int c = 0; c < colorBank.getNumColors(); c++) {
                     vector<float> color = colorBank.getColorFromIndex(c);
                     float dist = cartesian_dist(color, lab_channels);
                     if (dist < colorBank.getThreshold(c)) {
-                        colorMap[dist] = color;
+                        colorMap[dist] = colorBank.getNameFromIndex(c);
                     }
                 }
                 
@@ -108,9 +119,9 @@ class Pipeline {
                     currColor[1] = 0;
                     currColor[2] = 0;
                 } else {
-                    currColor[0] = round(colorMap.begin()->second[0]);
-                    currColor[1] = round(colorMap.begin()->second[1]);
-                    currColor[2] = round(colorMap.begin()->second[2]);
+                    currColor[0] = colorBank.getRepresentativeColorFromName(colorMap.begin()->second)[0];
+                    currColor[1] = colorBank.getRepresentativeColorFromName(colorMap.begin()->second)[1];
+                    currColor[2] = colorBank.getRepresentativeColorFromName(colorMap.begin()->second)[2];
                 }
                 
                 img.at<Vec3b>(Point(d,i)) = currColor;
