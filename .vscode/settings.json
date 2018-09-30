@@ -3,6 +3,7 @@
         "algorithm": "cpp",
         "chrono": "cpp",
         "limits": "cpp",
-        "ratio": "cpp"
+        "ratio": "cpp",
+        "complex": "cpp"
     }
 }
