@@ -27,18 +27,25 @@ class Colors {
     unordered_map<string, vector<float> > colors;
     unordered_map<string, vector<float> > representativeColors;
     unordered_map<string, float> thresholds;
-    vector<string> names = {"red", "yellow"};
+    vector<string> names = {"red", "yellow", "green", "blue"};
     
 public:
     Colors () {
         colors["red"] = {138.4, 207.81, 196.89};
         colors["yellow"] = {175.14135491, 116.86378348, 180.24186594};
+        colors["blue"] = {0,0,0};
+        colors["green"] = {0,0,0};
         
         representativeColors["red"] = {0, 0, 255};
         representativeColors["yellow"] = {0, 255, 255};
+        representativeColors["blue"] = {255, 0, 0};
+        representativeColors["green"] = {0, 255, 0};
+
         
         thresholds["red"] = 50;
         thresholds["yellow"] = 20;
+        thresholds["blue"] = 0;
+        thresholds["green"] = 0;
     }
     
     int getNumColors () {
@@ -55,6 +62,10 @@ public:
     }
     string getNameFromIndex (int index) {
         return names[index];
+    }
+    void setColor (string colorName, vector<float> config, float cutoff) {
+    	colors[colorName] = config;
+    	thresholds[colorName] = cutoff;
     }
 };
 
@@ -159,7 +170,7 @@ public:
     ImageConverter()
     : it_(nh_) {
         // Subscrive to input video feed and publish output video feed
-        image_sub_ = it_.subscribe("kinect2/hd/image_color", 1,
+        image_sub_ = it_.subscribe("asv/camera2/image_color", 1,
         &ImageConverter::imageCb, this);
         image_pub_ = it_.advertise("k_segment_viewer", 1);
     }
@@ -178,11 +189,11 @@ public:
                 // cout << myPipeline.getRealMin() << endl;
 
                 // Output modified video stream
-                sensor_msgs::ImagePtr output_msg = cv_bridge::CvImage(std_msgs::Header(), "rgb8", myPipeline.visualise()).toImageMsg();
+                sensor_msgs::ImagePtr output_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", myPipeline.visualise()).toImageMsg();
                 image_pub_.publish(output_msg);
 
             } else {
-                sensor_msgs::ImagePtr output_msg = cv_bridge::CvImage(std_msgs::Header(), "rgb8", cv_ptr->image).toImageMsg();
+                sensor_msgs::ImagePtr output_msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", cv_ptr->image).toImageMsg();
                 image_pub_.publish(output_msg);
             }
         } catch (cv_bridge::Exception& e) {
@@ -195,9 +206,14 @@ public:
 void callback(k_segment::k_segmentConfig &config, uint32_t level) {
     vector<float> red = {config.L_red, config.A_red, config.B_red};
     vector<float> yellow = {config.L_yellow, config.A_yellow, config.B_yellow};
+    vector<float> green = {config.L_green, config.A_green, config.B_green};
+    vector<float> blue = {config.L_blue, config.A_blue, config.B_blue};
 
     colorBank.setColor("red", red, config.distance_cutoff_red);
     colorBank.setColor("yellow", yellow, config.distance_cutoff_yellow);
+    colorBank.setColor("blue", blue, config.distance_cutoff_blue);
+    colorBank.setColor("green", green, config.distance_cutoff_green);
+
 }
 
 int main(int argc, char** argv)
